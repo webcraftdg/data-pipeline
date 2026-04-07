@@ -1,0 +1,118 @@
+{
+"metas":{"name":"import_agents_v2","version":3,"type":"import", "sourceType":"extern", "fileFormat":"xml", "active":1, "stopOnError":1, "table":"agents", "rowProcessor":"agent"},
+"records":[
+	{"fields":
+		[
+		   {
+	      "source": "reg",
+	      "target": "region",
+	      "format": "string"
+	    },
+	    {
+	      "source": "nom_uc",
+	      "target": "nom_uc",
+	      "format": "string"
+	    },
+	      {
+	      "source": "CODE_INSPECTEUR",
+	      "target": "CODE_INSPECTEUR",
+	      "format": "string"
+	    },
+	     {
+	      "source": "NOM_INSPECTEUR",
+	      "target": "NOM_INSPECTEUR",
+	      "format": "string"
+	    },
+	     {
+	      "source": "CODE_INSP_ADJOINT",
+	      "target": "CODE_INSP_ADJOINT",
+	      "format": "string"
+	    },
+
+	     {
+	      "source": "NOM_INSP_ADJOINT",
+	      "target": "NOM_INSP_ADJOINT",
+	      "format": "string"
+	    },
+	     {
+	      "source": "CODE_ACC",
+	      "target": "CODE_ACC",
+	      "format": "string"
+	    },
+	     {
+	      "source": "NOM_ACC",
+	      "target": "NOM_ACC",
+	      "format": "string"
+	    },
+	     {
+	      "source": "code",
+	      "target": "CODE_AGENT",
+	      "format": "string"
+	    },
+	     {
+	      "source": "civility",
+	      "target": "Civilite",
+	      "format": "string"
+	    },
+	     {
+	      "source": "fistname",
+	      "target": "NOM_PRENOM",
+	      "format": "string"
+	    },
+	     {
+	      "source": "lastname",
+	      "target": "NOM_AGENT",
+	      "format": "string"
+	    },
+	     {
+	      "source": "status",
+	      "target": "statut",
+	      "format": "string"
+	    },
+	     {
+	      "source": "dateStart",
+	      "target": "Date_entree",
+	      "format": "string",
+	      "transformer":{
+	          "name":"date"
+	      },
+	      "transformerOptions":{
+	        "from":"d/m/Y",
+	        "to":"Y-m-d"
+	      }
+	    },
+	     {
+	      "source": "dateEnd",
+	      "target": "Date_sortie",
+	      "format": "string",
+	       "transformer":{
+	          "name":"date"
+	      },
+	      "transformerOptions":{
+	        "from":"d/m/Y",
+	        "to":"Y-m-d"
+	      }
+	    },
+	     {
+	      "source": "email",
+	      "target": "mail",
+	      "format": "string"
+	    },
+	     {
+	      "source": "login",
+	      "target": "id_connexion",
+	      "format": "string"
+	    },
+	     {
+	      "source": "password",
+	      "target": "mdp_connexion",
+	      "format": "string"
+	    },
+	     {
+	      "source": "code_uc",
+	      "target": "code_uc",
+	      "format": "string"
+	    }
+	]
+}
+]}

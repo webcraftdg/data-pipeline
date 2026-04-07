@@ -10,8 +10,7 @@
  */
 namespace webcraftdg\dataPipeline\interfaces;
 
-use fractalCms\importExport\exceptions\RowProcessorResult;
-use fractalCms\importExport\runtime\contexts\Export as ExportContext;
+use webcraftdg\dataPipeline\exceptions\RowProcessorResult;
 
 interface RowProcessorInterface
 {
@@ -22,13 +21,12 @@ interface RowProcessorInterface
     public function getName() : string;
 
     /**
-     * process
+     * Undocumented function
      *
-     * @param  array              $row
-     * @param  ExportContext      $context
-     * @param  array              $params
+     * @param  array        $row
+     * @param  array        $params
      *
      * @return RowProcessorResult
      */
-    public function process(array $row, ExportContext $context, array $params = []): RowProcessorResult;
+    public function process(array $row, array $params = []): RowProcessorResult;
 }

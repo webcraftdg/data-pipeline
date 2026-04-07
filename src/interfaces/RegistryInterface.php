@@ -1,6 +1,6 @@
 <?php
 /**
- * ConfigLoaderInterface.php
+ * RegistryInterface.php
  *
  * PHP Version 8.2+
  *
@@ -12,14 +12,14 @@ namespace webcraftdg\dataPipeline\interfaces;
 
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 
-interface ConfigLoaderInterface 
+interface RegistryInterface 
 {
      /**
-      * load
+      * create
       *
-      * @param  string         $filePath
+      * @param  PipelineConfig      $config
       *
-      * @return PipelineConfig | null
+      * @return DataReaderInterface
       */
-    public static function load(string $filePath): PipelineConfig | null;
+    public static function create(PipelineConfig $config): DataReaderInterface;
 }
