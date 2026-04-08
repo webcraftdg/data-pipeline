@@ -1,2 +1,5 @@
 .vscode
 .vscode/*
+tests/Support/*
+!.gitkeep
+tests/_output

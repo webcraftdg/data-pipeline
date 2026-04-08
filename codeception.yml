@@ -10,3 +10,9 @@ actor_suffix: Tester
 extensions:
     enabled:
         - Codeception\Extension\RunFailed
+coverage:
+    enabled: true
+    include:
+        - src/*
+    report:
+        clover: tests/_output/coverage.xml       
