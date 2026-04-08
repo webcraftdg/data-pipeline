@@ -1,24 +1,33 @@
 <?php
 /**
- * ArrayDataReader.php
+ * ArrayDataInput.php
  *
  * PHP Version 8.2+
  *
  * @author David Ghyse <davidg@webcraftdg.fr>
  * @version XXX
- * @package webcraftdg\dataPipeline\readers
+ * @package webcraftdg\dataPipeline\io\inputs
  */
-namespace webcraftdg\dataPipeline\readers;
+namespace webcraftdg\dataPipeline\io\inputs;
 
-use webcraftdg\dataPipeline\interfaces\CountableReaderInterface;
-use Exception;
+use webcraftdg\dataPipeline\interfaces\InputCountableInterface;
 use InvalidArgumentException;
+use Exception;
 
-class ArrayDataReader implements CountableReaderInterface
+class ArrayDataInput implements InputCountableInterface
 {
 
     private array $rows;
     private int $batchSize = 200;
+
+    public function __construct(private array $options = [])
+    {
+        $this->rows = ($options['rows']) ?? null;
+        if ($this->rows === null) {
+            throw new InvalidArgumentException('ArrayExportData excepted params "rows"');
+        }
+        $this->batchSize = ($options['batchSize']) ?? $this->batchSize;
+    }
 
     /**
      * open
@@ -27,18 +36,8 @@ class ArrayDataReader implements CountableReaderInterface
      *
      * @return void
      */
-   public function open(array $options): void
+   public function open(): void
     {
-        try {
-            $this->rows = ($options['rows']) ?? null;
-            if ($this->rows === null) {
-                throw new InvalidArgumentException('ArrayExportData excepted params "rows"');
-            }
-            $this->batchSize = ($options['batchSize']) ?? $this->batchSize;
-            
-        } catch (Exception $e) {
-            throw $e;
-        }
     }
 
     /**

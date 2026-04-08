@@ -1,6 +1,6 @@
 <?php
 /**
- * PipelineFileFormat.php
+ * PipelineDataFormat.php
  *
  * PHP Version 8.3+
  *
@@ -10,7 +10,7 @@
  */
 namespace webcraftdg\dataPipeline\supports\enums;
 
-enum PipelineFileFormat 
+enum PipelineDataFormat 
 {
     const EXCEL = 'xls';
     const EXCEL_X = 'xlsx';
@@ -18,4 +18,5 @@ enum PipelineFileFormat
     const XML = 'xml';
     const JSON = 'json';
     const NDJSON = 'ndjson';
+    const ARRAY = 'array';
 }

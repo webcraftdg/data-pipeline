@@ -70,13 +70,13 @@ class PipelineConfig
      *
      * @param  string        $name
      *
-     * @return ColumnMapping
+     * @return ColumnMapping | null
      */
-    public function findColumnByName(string $name): ColumnMapping
+    public function findColumnByName(string $name): ColumnMapping | null
     {
         $columnFind = null;
         foreach($this->columns as $column){
-            if ($column->inputKey == $name) {
+            if ($column->inputKey == $name || $column->outputKey == $name) {
                 $columnFind = $column;
                 break;
             }

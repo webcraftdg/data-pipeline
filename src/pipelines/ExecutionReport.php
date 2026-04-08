@@ -45,6 +45,8 @@ final class ExecutionReport
          */
         public function __construct(public ErrorCollector $errorCollector)
         {
-
+                $this->rowsTotal = 0;
+                $this->rowsSuccess = 0;
+                $this->rowsSuccess = 0;
         }
 }

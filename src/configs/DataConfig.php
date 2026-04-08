@@ -14,7 +14,8 @@ abstract class DataConfig
 {
     public function __construct(
         public string $type,
-        array $options = []
+        public string $name,
+        public array $options = []
     )
     {
     }

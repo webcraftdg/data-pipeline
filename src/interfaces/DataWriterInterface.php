@@ -10,31 +10,31 @@
  */
 namespace webcraftdg\dataPipeline\interfaces;
 
-use fractalCms\importExport\runtime\contexts\Writer as WriterContext;
-use fractalCms\importExport\io\exports\writers\WriteTarget;
+use webcraftdg\dataPipeline\contexts\OutputContext;
 
 interface DataWriterInterface
 {
     /**
      * open
      *
-     * @param  array] $params
+     * @return void
+     */
+    public function open(): void;
+
+    /**
+     * write
+     *
+     * @param  array              $row
+     * @param  OutputContext|null $context
      *
      * @return void
      */
-    public function open(WriterContext $writerContext): void;
-
-    /**
-     * @param WriteTarget $target
-     * @param array $row
-     * @return void
-     */
-    public function write(WriteTarget $target, array $row): void;
+    public function write(array $row, ?OutputContext $context = null): void;
 
     /**
      * close
      *
      * @return void
      */
-    public function close(WriterContext $writerContext): void;
+    public function close(): void;
 }

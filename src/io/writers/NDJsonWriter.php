@@ -6,9 +6,9 @@
  *
  * @author David Ghyse <davidg@webcraftdg.fr>
  * @version XXX
- * @package webcraftdg\dataPipeline\writers
+ * @package webcraftdg\dataPipeline\io\writers
  */
-namespace webcraftdg\dataPipeline\writers;
+namespace webcraftdg\dataPipeline\io\writers;
 
 use fractalCms\importExport\io\interfaces\Writer as WriterInterface;
 use fractalCms\importExport\runtime\contexts\Writer as WriterContext;

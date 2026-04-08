@@ -10,6 +10,7 @@
  */
 namespace webcraftdg\dataPipeline\interfaces;
 
+use webcraftdg\dataPipeline\contexts\OutputContext;
 use webcraftdg\dataPipeline\exceptions\OutputResult;
 
 interface OutputInterface {
@@ -23,11 +24,12 @@ interface OutputInterface {
     /**
      * write
      *
-     * @param  array        $row
+     * @param  array         $row
+     * @param  OutputContext $context
      *
-     * @return OutputResult
+     * @return void
      */
-    public function write(array $row): OutputResult;
+    public function write(array $row, ?OutputContext $context = null): void;
 
     /**
      * close

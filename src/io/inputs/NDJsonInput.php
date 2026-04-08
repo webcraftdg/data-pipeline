@@ -6,16 +6,16 @@
  *
  * @author David Ghyse <davidg@webcraftdg.fr>
  * @version XXX
- * @package webcraftdg\dataPipeline\readers
+ * @package webcraftdg\dataPipeline\io\inputs
  */
-namespace webcraftdg\dataPipeline\readers;
+namespace webcraftdg\dataPipeline\io\inputs;
 
 
-use webcraftdg\dataPipeline\interfaces\DataReaderInterface;
+use webcraftdg\dataPipeline\interfaces\InputInterface;
 use InvalidArgumentException;
 use Exception;
 
-class NDJsonReader implements DataReaderInterface
+class NDJsonInput implements InputInterface
 {
 
     private $handle;

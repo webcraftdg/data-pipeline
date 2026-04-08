@@ -1,15 +1,14 @@
 <?php
 /**
- * JsonWriter.php
+ * XmlWriter.php
  *
  * PHP Version 8.2+
  *
  * @author David Ghyse <davidg@webcraftdg.fr>
  * @version XXX
- * @package webcraftdg\dataPipeline\writers
+ * @package webcraftdg\dataPipeline\io\writers
  */
-namespace webcraftdg\dataPipeline\writers;
-
+namespace webcraftdg\dataPipeline\io\writers;
 
 use fractalCms\importExport\io\interfaces\Writer as WriterInterface;
 use fractalCms\importExport\runtime\contexts\Writer as WriterContext;
@@ -17,34 +16,38 @@ use fractalCms\importExport\io\exports\writers\WriteTarget;
 use fractalCms\importExport\pipeline\interfaces\RecordFormatter;
 use fractalCms\importExport\pipeline\formatters\Record;
 use fractalCms\importExport\models\ImportConfig;
-use yii\helpers\Json;
 use InvalidArgumentException;
+use XMLWriter as GlobalXMLWriter;
 use Exception;
 use Yii;
 
-class JsonWriter implements WriterInterface
+class XmlWriter implements WriterInterface
 {
+    /**
+     * @var xmlWriter
+     */
+    private GlobalXMLWriter $xmlWriter;
+    private ImportConfig $config;
+    private RecordFormatter $recordFormatter;
     /**
      * @var resource | false
      */
-    private  $handle;
-    private ImportConfig $config;
-    private RecordFormatter $recordFormatter;
-    private bool $firstRecord = true;
+    private  $f;
 
-
-    /**
+     /**
      * __construct
      *
      * @param  ImportConfig $importConfig
      */
     public function __construct(ImportConfig $importConfig)
     {
+        $xmlWriter = new GlobalXMLWriter();
+        $this->xmlWriter = $xmlWriter;
         $this->config = $importConfig;
         $this->recordFormatter = new Record();
     }
 
-    /**
+     /**
      * open
      *
      * @param  array $params
@@ -56,26 +59,22 @@ class JsonWriter implements WriterInterface
         try {
             $path = $writerContext->absolutePath ?? null;
             if ($path === null) {
-                throw new InvalidArgumentException('JsonWriter params "path" not found');
+                throw new InvalidArgumentException('XmlWriter params "path" not found');
             }
-            $meta =  [
-                'configId' => $this->config->id,
-                'name' => $this->config->name,
-                'version' => $this->config->version,
-                'dateCreate' => date('c', strtotime($this->config->dateCreate)),
-                'generatedAt' => date('c'),
-            ];
-        
-            $this->handle = fopen($path, 'w');
-            fwrite($this->handle, '{'."\n");
-            fputs($this->handle, '"metas":'.Json::encode($meta).",\n");
-            fputs($this->handle, '"records":['."\n");
+            $this->xmlWriter->openUri($path);
+            $this->xmlWriter->startDocument('1.0', 'UTF-8');
+            $this->xmlWriter->startElement('export');
+            $this->xmlWriter->writeAttribute('name', $this->config->name);
+            $this->xmlWriter->writeAttribute('dateCreate', date('c', strtotime($this->config->dateCreate)));
+            $this->xmlWriter->writeAttribute('generated_at', date('c'));
+            $this->xmlWriter->setIndent(true);          // Active l'indentation
+            $this->xmlWriter->startElement('records');
+            $this->xmlWriter->setIndentString('  ');
         } catch (Exception $e) {
             Yii::error($e->getMessage(), __METHOD__);
             throw  $e;
         }
     }
-
 
     /**
      * @param WriteTarget $target
@@ -88,38 +87,18 @@ class JsonWriter implements WriterInterface
         try {
             if (empty($row) === false) {
                 $row = $this->recordFormatter->format($row, $this->config);
-                if ($this->firstRecord === false) {
-                    fputs($this->handle, ','."\n");
+                $this->xmlWriter->startElement('fields');
+                foreach ($row as $field => $item) {
+                    $this->xmlWriter->startElement('field');
+                    $this->xmlWriter->writeAttribute('columnId', ($item['columnId']) ?? 'notfound');
+                    $this->xmlWriter->writeAttribute('name', ($item['name']) ?? $field);
+                    $this->xmlWriter->writeAttribute('label', $field);
+                    $value = ($item['value']) ?? '';
+                    $this->xmlWriter->text($value);
+                    $this->xmlWriter->endElement();
                 }
-                fputs($this->handle, Json::encode(['fields' => $this->prepareRow($row)]));
-                $this->firstRecord = false;
+                $this->xmlWriter->endElement();
             }
-        } catch (Exception $e) {
-            Yii::error($e->getMessage(), __METHOD__);
-            throw  $e;
-        }
-    }
-
-    /**
-     * prepare row
-     *
-     * @param  array $rawRow
-     *
-     * @return array
-     */
-    protected function prepareRow(array $rawRow) : array
-    {
-         try {
-            $fields = [];
-            foreach ($rawRow as $fieldName => $item) {
-                $field = [];
-                $field['columnId'] = ($item['columnId']) ?? '';
-                $field['name'] = ($item['name']) ?? '';
-                $field['label'] = $fieldName;
-                $field['value'] = ($item['value']) ?? '';
-                $fields[] = $field;
-            }
-            return $fields;
         } catch (Exception $e) {
             Yii::error($e->getMessage(), __METHOD__);
             throw  $e;
@@ -134,8 +113,10 @@ class JsonWriter implements WriterInterface
     public function close(WriterContext $writerContext): void
     {
         try {
-            fputs($this->handle, "\n".']}');
-            fclose($this->handle);
+            $this->xmlWriter->endElement(); // rows
+            $this->xmlWriter->endElement(); // </export>
+            $this->xmlWriter->endDocument();
+            $this->xmlWriter->flush();
         } catch (Exception $e) {
             Yii::error($e->getMessage(), __METHOD__);
             throw  $e;

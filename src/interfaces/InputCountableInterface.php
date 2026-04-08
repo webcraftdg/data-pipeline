@@ -10,9 +10,8 @@
  */
 namespace webcraftdg\dataPipeline\interfaces;
 
-use webcraftdg\dataPipeline\interfaces\DataReaderInterface;
 
-interface CountableReaderInterface extends DataReaderInterface
+interface InputCountableInterface extends InputInterface
 {
 
     /**

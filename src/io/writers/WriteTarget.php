@@ -6,9 +6,9 @@
  *
  * @author David Ghyse <davidg@webcraftdg.fr>
  * @version XXX
- * @package webcraftdg\dataPipeline\writers
+ * @package webcraftdg\dataPipeline\io\writers
  */
-namespace webcraftdg\dataPipeline\writers;
+namespace webcraftdg\dataPipeline\io\writers;
 
 class WriteTarget
 {

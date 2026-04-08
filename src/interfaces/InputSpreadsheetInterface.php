@@ -1,6 +1,6 @@
 <?php
 /**
- * SpreadsheetImportReader.php
+ * InputSpreadsheetInterface.php
  *
  * PHP Version 8.2+
  *
@@ -12,7 +12,7 @@ namespace webcraftdg\dataPipeline\interfaces;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
-interface SpreadsheetImportReaderInterface
+interface InputSpreadsheetInterface
 {
 
     /**

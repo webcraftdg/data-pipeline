@@ -6,21 +6,21 @@
  *
  * @author David Ghyse <davidg@webcraftdg.fr>
  * @version XXX
- * @package webcraftdg\dataPipeline\readers
+ * @package webcraftdg\dataPipeline\io\inputs
  */
-namespace webcraftdg\dataPipeline\readers;
+namespace webcraftdg\dataPipeline\io\inputs;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use webcraftdg\dataPipeline\interfaces\DataReaderInterface;
-use webcraftdg\dataPipeline\interfaces\SpreadsheetImportReaderInterface;
+use webcraftdg\dataPipeline\interfaces\InputInterface;
+use webcraftdg\dataPipeline\interfaces\InputSpreadsheetInterface;
 use Exception;
 use InvalidArgumentException;
 
-class ExcelReader implements DataReaderInterface, SpreadsheetImportReaderInterface
+class ExcelInput implements InputInterface, InputSpreadsheetInterface
 {
 
 

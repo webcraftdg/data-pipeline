@@ -91,8 +91,8 @@ class JsonFileConfigReader implements ConfigLoaderInterface
                 type: $attributes['type'],
                 stopOnError: (isset($attributes['stopOnError']) === true) ? $attributes['stopOnError'] : false,
                 fileFormat: $attributes['fileFormat'],
-                source: new SourceConfig($attributes['source']['type'], $attributes['source']['options']),
-                target: new TargetConfig($attributes['target']['type'], $attributes['target']['options']),
+                source: new SourceConfig($attributes['source']['type'], $attributes['source']['name'], $attributes['source']['options']),
+                target: new TargetConfig($attributes['target']['type'], $attributes['source']['name'], $attributes['target']['options']),
                 columns: static::prepareColumns($columns),
                 processor: $processor,
                 limiter: $limiter

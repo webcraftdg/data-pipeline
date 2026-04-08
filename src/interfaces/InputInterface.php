@@ -1,6 +1,6 @@
 <?php
 /**
- * DataReaderInterface.php
+ * InputInterface.php
  *
  * PHP Version 8.3+
  *
@@ -10,17 +10,15 @@
  */
 namespace webcraftdg\dataPipeline\interfaces;
 
-interface DataReaderInterface
+interface InputInterface
 {
 
     /**
-     * open
-     *
-     * @param  array        $options
-     *
+     * open 
+     * 
      * @return void
      */
-    public function open(array $options): void;
+    public function open(): void;
     /**
      *  read
      *

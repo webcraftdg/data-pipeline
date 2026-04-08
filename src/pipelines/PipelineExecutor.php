@@ -1,8 +1,8 @@
 <?php
 /**
- * ImportExportExecutionService.php
+ * PipelineExecutor.php
  *
- * PHP Version 8.2+
+ * PHP Version 8.3+
  *
  * @author David Ghyse <davidg@webcraftdg.fr>
  * @version XXX
@@ -12,13 +12,13 @@
 namespace webcraftdg\dataPipeline\pipelines;
 
 use webcraftdg\dataPipeline\mappers\ColumnMapper;
-use Exception;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\exceptions\ErrorCollector;
 use webcraftdg\dataPipeline\exceptions\PipelineError;
-use webcraftdg\dataPipeline\interfaces\DataReaderInterface;
+use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\interfaces\RowProcessorInterface;
+use Exception;
 
 final class PipelineExecutor
 {
@@ -38,7 +38,7 @@ final class PipelineExecutor
      * run
      *
      * @param  \webcraftdg\dataPipeline\configs\PipelineConfig $config
-     * @param  DataReaderInterface                             $reader
+     * @param  InputInterface                                  $input
      * @param  OutputInterface                                 $output
      * @param  RowProcessorInterface|null                      $processor
      *
@@ -46,7 +46,7 @@ final class PipelineExecutor
      */
     public function run(
         PipelineConfig $config,
-        DataReaderInterface $reader,
+        InputInterface $input,
         OutputInterface $output,
         ?RowProcessorInterface $processor = null
     ): ExecutionReport {
@@ -56,35 +56,39 @@ final class PipelineExecutor
 
         $rowNumber = 0;
 
-        foreach ($reader->read() as $row) {
-            $rowNumber++;
-            $report->rowsTotal++;
+        foreach ($input->read() as $rows) {
+            foreach($rows as $row) {
+                $rowNumber++;
+                $report->rowsTotal++;
+                try {
+                    $mappedRow = $this->columnMapper->map($row, $config);
 
-            try {
-                $mappedRow = $this->columnMapper->map($row, $config);
-
-                if ($processor !== null) {
-                    
-                    $processorResult = $processor->process($mappedRow);
-                    if ($processorResult->handled === true) {
-                        $report->rowsSuccess++;
-                        continue;
+                    if ($processor !== null) {
+                        
+                        $processorResult = $processor->process($mappedRow);
+                        if ($processorResult->handled === true) {
+                            $report->rowsSuccess++;
+                            continue;
+                        }
+                    }
+                    $mappedRow = $result->attributes ?? $mappedRow;
+                    $output->write($mappedRow);
+                    $report->rowsSuccess++;
+                } catch (Exception $e) {
+                    $report->rowsError++;
+                    $report->errorCollector->add(new PipelineError(
+                        rowNumber: $rowNumber,
+                        column: '*',
+                        message: $e->getMessage()
+                    ));
+                    if ($config->stopOnError) {
+                        break;
                     }
                 }
-                $mappedRow = $result->attributes ?? $mappedRow;
-                $output->write($mappedRow);
-                $report->rowsSuccess++;
-            } catch (Exception $e) {
-                $report->rowsError++;
-                $report->errorCollector->add(new PipelineError(
-                    rowNumber: $rowNumber,
-                    column: '*',
-                    message: $e->getMessage()
-                ));
-                if ($config->stopOnError) {
-                    break;
-                }
             }
+        }
+        if ($report->errorCollector->hasErrors() === false) {
+            $report->success = true;
         }
         $output->close();
         return $report;

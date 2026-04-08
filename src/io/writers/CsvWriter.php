@@ -6,57 +6,65 @@
  *
  * @author David Ghyse <davidg@webcraftdg.fr>
  * @version XXX
- * @package webcraftdg\dataPipeline\writers
+ * @package webcraftdg\dataPipeline\io\writers
  */
-namespace webcraftdg\dataPipeline\writers;
+namespace webcraftdg\dataPipeline\io\writers;
 
-use fractalCms\importExport\io\interfaces\Writer as WriterInterface;
-use fractalCms\importExport\runtime\contexts\Writer as WriterContext;
-use fractalCms\importExport\io\exports\writers\WriteTarget;
+use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
+use webcraftdg\dataPipeline\exceptions\OutputResult;
 use InvalidArgumentException;
 use Exception;
-use Yii;
+use webcraftdg\dataPipeline\configs\PipelineConfig;
+use webcraftdg\dataPipeline\contexts\OutputContext;
 
-class CsvWriter implements WriterInterface
+class CsvWriter implements DataWriterInterface
 {
     /**
      * @var $handle resource | false
      */
     private  $handle;
 
+
+      /**
+     * constructor
+     *
+     * @param  \webcraftdg\dataPipeline\configs\PipelineConfig $config
+     */
+    public function __construct(private PipelineConfig $config, private array $options = [])
+    {
+    }
+
     /**
      * open
      *
-     * @param  array $params
-     *
      * @return void
      */
-    public function open(WriterContext $writerContext): void
+    public function open(): void
     {
         try {
-            $path = $writerContext->absolutePath ?? null;
+            $path = ($this->options['path']) ?? null;
             if ($path === null) {
                 throw new InvalidArgumentException('CsvWriter params "path" not found');
             }
             $this->handle = fopen($path, 'w');
         } catch (Exception $e) {
-            Yii::error($e->getMessage(), __METHOD__);
             throw  $e;
         }
     }
 
     /**
-     * @param WriteTarget $target
-     * @param array $row
+     * write
+     *
+     * @param  array              $row
+     * @param  OutputContext|null $context
+     *
      * @return void
-     * @throws Exception
      */
-    public function write(WriteTarget $target, array $row): void
+    public function write(array $row, ?OutputContext $context = null): void
     {
         try {
             fputcsv($this->handle, $row, ';', '"', "\\", \PHP_EOL);
         } catch (Exception $e) {
-            Yii::error($e->getMessage(), __METHOD__);
             throw  $e;
         }
     }
@@ -66,12 +74,11 @@ class CsvWriter implements WriterInterface
      *
      * @return void
      */
-    public function close(WriterContext $writerContext): void
+    public function close(): void
     {
         try {
             fclose($this->handle);
         } catch (Exception $e) {
-            Yii::error($e->getMessage(), __METHOD__);
             throw  $e;
         }
     }

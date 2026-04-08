@@ -1,20 +1,20 @@
 <?php
 /**
- * JsonReader.php
+ * JsonInput.php
  *
  * PHP Version 8.2+
  *
  * @author David Ghyse <davidg@webcraftdg.fr>
  * @version XXX
- * @package webcraftdg\dataPipeline\readers
+ * @package webcraftdg\dataPipeline\io\inputs
  */
-namespace webcraftdg\dataPipeline\readers;
+namespace webcraftdg\dataPipeline\io\inputs;
 
 
-use webcraftdg\dataPipeline\interfaces\DataReaderInterface;
+use webcraftdg\dataPipeline\interfaces\InputInterface;
 use Exception;
 
-class JsonReader implements DataReaderInterface
+class JsonInput implements InputInterface
 {
 
     private int $batchSize = 250;

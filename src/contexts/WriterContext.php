@@ -40,7 +40,6 @@ final class WriterContext extends ExecutionContext
         public WriterInterface $writer,
         public Writer $writerContext,
         public string $sectionName,
-        public string $absolutePath,
         public string $relativePath,
         public array $preamble = [],
         public int $rowOffset = 1,
