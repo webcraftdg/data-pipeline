@@ -1,77 +1,87 @@
 {
-"metas":{"name":"import_agents_v2","version":3,"type":"import", "sourceType":"extern", "fileFormat":"xml", "active":1, "stopOnError":1, "table":"agents", "rowProcessor":"agent"},
+"metas":{
+	"name":"import_agents_v2",
+	"version":3,
+	"type":"import",
+	"source":{"type": "file", "options": {}},
+	"target":{"type": "file", "options": {}},
+	"fileFormat":"xml",
+	"active":1,
+	"stopOnError":1,
+	"processor":{"name" : "agent", "options": {}}},
+	"limiter":{"name": "memory", "options": {}},
 "records":[
 	{"fields":
 		[
 		   {
-	      "source": "reg",
-	      "target": "region",
+	      "inputKey": "reg",
+	      "outputKey": "region",
 	      "format": "string"
 	    },
 	    {
-	      "source": "nom_uc",
-	      "target": "nom_uc",
+	      "inputKey": "nom_uc",
+	      "outputKey": "nom_uc",
 	      "format": "string"
 	    },
 	      {
-	      "source": "CODE_INSPECTEUR",
-	      "target": "CODE_INSPECTEUR",
+	      "inputKey": "CODE_INSPECTEUR",
+	      "outputKey": "CODE_INSPECTEUR",
 	      "format": "string"
 	    },
 	     {
-	      "source": "NOM_INSPECTEUR",
-	      "target": "NOM_INSPECTEUR",
+	      "inputKey": "NOM_INSPECTEUR",
+	      "outputKey": "NOM_INSPECTEUR",
 	      "format": "string"
 	    },
 	     {
-	      "source": "CODE_INSP_ADJOINT",
-	      "target": "CODE_INSP_ADJOINT",
+	      "inputKey": "CODE_INSP_ADJOINT",
+	      "outputKey": "CODE_INSP_ADJOINT",
 	      "format": "string"
 	    },
 
 	     {
-	      "source": "NOM_INSP_ADJOINT",
-	      "target": "NOM_INSP_ADJOINT",
+	      "inputKey": "NOM_INSP_ADJOINT",
+	      "outputKey": "NOM_INSP_ADJOINT",
 	      "format": "string"
 	    },
 	     {
-	      "source": "CODE_ACC",
-	      "target": "CODE_ACC",
+	      "inputKey": "CODE_ACC",
+	      "outputKey": "CODE_ACC",
 	      "format": "string"
 	    },
 	     {
-	      "source": "NOM_ACC",
-	      "target": "NOM_ACC",
+	      "inputKey": "NOM_ACC",
+	      "outputKey": "NOM_ACC",
 	      "format": "string"
 	    },
 	     {
-	      "source": "code",
-	      "target": "CODE_AGENT",
+	      "inputKey": "code",
+	      "outputKey": "CODE_AGENT",
 	      "format": "string"
 	    },
 	     {
-	      "source": "civility",
-	      "target": "Civilite",
+	      "inputKey": "civility",
+	      "outputKey": "Civilite",
 	      "format": "string"
 	    },
 	     {
-	      "source": "fistname",
-	      "target": "NOM_PRENOM",
+	      "inputKey": "fistname",
+	      "outputKey": "NOM_PRENOM",
 	      "format": "string"
 	    },
 	     {
-	      "source": "lastname",
-	      "target": "NOM_AGENT",
+	      "inputKey": "lastname",
+	      "outputKey": "NOM_AGENT",
 	      "format": "string"
 	    },
 	     {
-	      "source": "status",
-	      "target": "statut",
+	      "inputKey": "status",
+	      "outputKey": "statut",
 	      "format": "string"
 	    },
 	     {
-	      "source": "dateStart",
-	      "target": "Date_entree",
+	      "inputKey": "dateStart",
+	      "outputKey": "Date_entree",
 	      "format": "string",
 	      "transformer":{
 	          "name":"date"
@@ -82,8 +92,8 @@
 	      }
 	    },
 	     {
-	      "source": "dateEnd",
-	      "target": "Date_sortie",
+	      "inputKey": "dateEnd",
+	      "outputKey": "Date_sortie",
 	      "format": "string",
 	       "transformer":{
 	          "name":"date"
@@ -94,23 +104,23 @@
 	      }
 	    },
 	     {
-	      "source": "email",
-	      "target": "mail",
+	      "inputKey": "email",
+	      "outputKey": "mail",
 	      "format": "string"
 	    },
 	     {
-	      "source": "login",
-	      "target": "id_connexion",
+	      "inputKey": "login",
+	      "outputKey": "id_connexion",
 	      "format": "string"
 	    },
 	     {
-	      "source": "password",
-	      "target": "mdp_connexion",
+	      "inputKey": "password",
+	      "outputKey": "mdp_connexion",
 	      "format": "string"
 	    },
 	     {
-	      "source": "code_uc",
-	      "target": "code_uc",
+	      "inputKey": "code_uc",
+	      "outputKey": "code_uc",
 	      "format": "string"
 	    }
 	]

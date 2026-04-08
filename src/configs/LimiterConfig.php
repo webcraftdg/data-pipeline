@@ -11,49 +11,37 @@
 namespace webcraftdg\dataPipeline\configs;
 
 use webcraftdg\dataPipeline\supports\enums\PipelineMaxLimit;
+use Exception;
 
 class LimiterConfig 
 {
 
     public function __construct(
-        public int $rows,
-        public int $columns,
-        public int $estimatedMb,
-        public string $format,
         public string $name,
-        public int $limit,
-        public int $offset,
-        array $options = []
+        public ?int $maxLimit = 100000,
+        public ?int $maxOffset = 1000,
+        public ?int $maxMb = 500,
+        private ?array $options = []
     )
     { 
     }
 
-      /**
-     * @param LimiterModel $limiterModel
-     * @return string|null
-     * @throws Exception
-     */
-    public function assertAllowed(): string | null
+    public function assertAllowed(int $rows, int $columns, int $mb): string | null
     {
         try {
-            $rows    = $this->rows ?? 0;
-            $columns = $this->columns ?? 0;
-            $mb      = $this->estimatedMb ?? 0;
-            $statementName = $this->name;
 
             $message = null;
-            if ($rows > PipelineMaxLimit::ROWS) {
-                $message = $this->deny('Export trop volumineux : '.$rows.' lignes', $statementName);
+            if ($rows > $this->maxLimit) {
+                $message = $this->deny('Export trop volumineux : '.$rows.' lignes', $this->name);
             }
-            if ($columns > PipelineMaxLimit::COLUMNS) {
-                $message = $this->deny('Export trop large : '.$columns.' colonnes', $statementName);
+            if ($columns > $this->maxOffset) {
+                $message = $this->deny('Export trop large : '.$columns.' colonnes', $this->name);
             }
-            if ($mb > PipelineMaxLimit::ESTIMATED_MB) {
-                $message = $this->deny('Export estimé à {'.$mb.'} MB, trop lourd pour le navigateur', $statementName);
+            if ($mb > $this->maxMb) {
+                $message = $this->deny('Export estimé à {'.$mb.'} MB, trop lourd pour le navigateur', $this->name);
             }
             return $message;
         } catch (Exception $e)  {
-            Yii::error($e->getMessage(), __METHOD__);
             throw  $e;
         }
     }
@@ -63,12 +51,12 @@ class LimiterConfig
      * @param string $statementName
      * @return string
      */
-    protected function deny(string $reason, string $statementName): string
+    protected function deny(string $reason): string
     {
         return
              'Export impossible via l’interface web<br/>'
             .$reason.'<br/>'
             .'Merci d\'utiliser la commande CLI :<br/>'
-            .'php yii.php fractalCmsImportExport:import-export/index  -name='.$statementName.' -version={versionActive}';
+            .'php yii.php fractalCmsImportExport:import-export/index  -name='.$this->name.' -version={versionActive}';
     }
 }

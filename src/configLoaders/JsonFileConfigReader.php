@@ -12,8 +12,13 @@ namespace webcraftdg\dataPipeline\configLoaders;
 
 use webcraftdg\dataPipeline\interfaces\ConfigLoaderInterface;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\validators\FileConfigJsonValidator;
 use Exception;
+use webcraftdg\dataPipeline\configs\ColumnMapping;
+use webcraftdg\dataPipeline\configs\LimiterConfig;
+use webcraftdg\dataPipeline\configs\ProcessorConfig;
+use webcraftdg\dataPipeline\configs\SourceConfig;
+use webcraftdg\dataPipeline\configs\TargetConfig;
+use webcraftdg\dataPipeline\configs\TransformerConfig;
 
 class JsonFileConfigReader implements ConfigLoaderInterface
 {
@@ -33,7 +38,7 @@ class JsonFileConfigReader implements ConfigLoaderInterface
             try {
                 $config = null;
                 $json = file_get_contents($filePath);
-                $data = json_decode($json);
+                $data = json_decode($json, true);
                 $attributes = ($data['metas']) ?? [];
                 $records = ($data['records']) ?? [];
                 if (empty($records) === false) {
@@ -60,15 +65,73 @@ class JsonFileConfigReader implements ConfigLoaderInterface
     protected static function prepare(array $attributes, array $columns): PipelineConfig
     {
         try {
-            
+            $processor = null;
+            $limiter = null;
+
+            if(isset($attributes['processor']) === true) {
+                $processor = new ProcessorConfig(
+                    name:$attributes['processor']['name'],
+                    options:($attributes['processor']['options']) ?? null
+                );
+            }
+
+            if(isset($attributes['limiter']) === true) {
+                $limiter = [
+                    'name' => $attributes['limiter']['name'],
+                    'options' => ($attributes['limiter']['options']) ?? null,
+                ];
+                $limiter = new LimiterConfig(
+                    name:$attributes['limiter']['name'],
+                    options:($attributes['limiter']['options']) ?? null
+                );
+            }
             $config = new PipelineConfig(
                 name: $attributes['name'],
                 version: $attributes['version'], 
                 type: $attributes['type'],
                 stopOnError: (isset($attributes['stopOnError']) === true) ? $attributes['stopOnError'] : false,
-                fileFormat: $attributes['fileFormat']);
+                fileFormat: $attributes['fileFormat'],
+                source: new SourceConfig($attributes['source']['type'], $attributes['source']['options']),
+                target: new TargetConfig($attributes['target']['type'], $attributes['target']['options']),
+                columns: static::prepareColumns($columns),
+                processor: $processor,
+                limiter: $limiter
+                );
 
                 return $config;
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+
+
+    /**
+     * prepare columns
+     *
+     * @param  array $columns
+     *
+     * @return array
+     */
+    protected static function prepareColumns(array $columns): array
+    {
+        try {
+            $columnsMappging = [];
+            foreach($columns as $column) {
+                $transformers = [];
+                if (isset($column['transformer']) === true && isset($column['transformerOptions']) === true) {
+                    $transformer = new TransformerConfig($column['transformer']['name'], $column['transformerOptions']);
+                    $transformers[] = $transformer;
+                }
+                $columnMapping = new ColumnMapping(
+                    inputKey: $column['inputKey'],
+                    outputKey: $column['outputKey'],
+                    format: $column['format'],
+                    transformers: $transformers,
+                    options: ($column['options']) ?? []
+                );
+                $columnsMappging[] = $columnMapping;
+            }
+            return $columnsMappging;
         } catch (Exception $e) {
             throw $e;
         }

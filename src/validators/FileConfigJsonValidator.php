@@ -39,7 +39,7 @@ class FileConfigJsonValidator implements ValidatorInterface
                     $errorCollector->add(new PipelineError(0, 'validate JSON', 'FORMAT JSON NOT VALID'));
                 } else {
                     try {
-                        $data = json_decode($json);
+                        $data = json_decode($json, true);
                         $attributes = ($data['metas']) ?? null;
                         $records = ($data['records']) ?? null;
                         $columns = null;
@@ -53,10 +53,13 @@ class FileConfigJsonValidator implements ValidatorInterface
                         $attributesRequired = ['name', 'version', 'type', 'source', 'target', 'fileFormat'];
                         if ($attributes !== null) {
                             foreach($attributesRequired as $attributeRequired) {
-                                if (in_array($attributeRequired, $attributes) === false) {
+                                if (in_array($attributeRequired, array_keys($attributes)) === false) {
                                     $errorCollector->add(new PipelineError(0, 'Metas attribute', $attributeRequired.' is required'));
                                 }
                             }
+                        }
+                        if (is_array($columns) === true) {
+                            $errorCollector = $this->validateColumns($columns, $errorCollector);
                         }
                     } catch(Exception $e) {
                         $errorCollector->add(new PipelineError(0, 'FILE CONFIG ERROR', $e->getMessage()));
@@ -64,6 +67,31 @@ class FileConfigJsonValidator implements ValidatorInterface
                 }
             } else {
                 $errorCollector->add(new PipelineError(0, 'FiLE', 'File is required'));
+            }
+            return $errorCollector;
+        } catch(Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Validate columns
+     *
+     * @param  array          $columns
+     * @param  ErrorCollector $errorCollector
+     *
+     * @return ErrorCollector
+     */
+    protected function validateColumns(array $columns, ErrorCollector $errorCollector) : ErrorCollector
+    {
+        try {
+            $attributesRequired = ['inputKey', 'outputKey', 'format'];
+            foreach($columns as $index => $column) {
+                foreach($attributesRequired as $attributeRequired) {
+                    if (in_array($attributeRequired, array_keys($column)) === false) {
+                        $errorCollector->add(new PipelineError(0, 'Column : '.$index, $attributeRequired.' is required'));
+                    }
+                }
             }
             return $errorCollector;
         } catch(Exception $e) {

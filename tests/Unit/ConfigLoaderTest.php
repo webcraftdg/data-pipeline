@@ -4,6 +4,7 @@
 namespace Tests\Unit;
 
 use Tests\Support\UnitTester;
+use webcraftdg\dataPipeline\configLoaders\JsonFileConfigReader;
 use webcraftdg\dataPipeline\configs\ColumnMapping;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\configs\SourceConfig;
@@ -51,10 +52,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertTrue($config->isImport());
         $this->tester->assertFalse($config->isExport());
 
-        $path = '../Data/import_agent_v2_test.json';
+        $path = __DIR__.'/../Support/Data/import_agent_v2_test.json';
         $validator = new FileConfigJsonValidator($path);
         $errorColector = $validator->validate();
         $this->tester->assertFalse( $errorColector->hasErrors());
-
+        $config = JsonFileConfigReader::load($path);
+        $this->tester->assertNotNull($config);
+        $this->tester->assertEquals(19, count($config->columns));
     }
 }
