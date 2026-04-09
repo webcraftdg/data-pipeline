@@ -20,6 +20,7 @@ use webcraftdg\dataPipeline\registry\TransformerRegistry;
 use webcraftdg\dataPipeline\supports\enums\DataEndpointType;
 use webcraftdg\dataPipeline\supports\enums\PipelineDataFormat;
 use webcraftdg\dataPipeline\transformers\BooleanColumnTransformer;
+use webcraftdg\dataPipeline\transformers\ConvertColumnTransformer;
 use webcraftdg\dataPipeline\transformers\DateColumnTransformer;
 use webcraftdg\dataPipeline\transformers\DateXlsColumnTransformer;
 use webcraftdg\dataPipeline\transformers\LowerColumnTransformer;
@@ -639,7 +640,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
             new ReplaceColumnTransformer(),
             new StrPadColumnTransformer(),
             new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+            new UpperColumnTransformer(),
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -667,7 +668,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/test_input.xlsx'
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::NDJSON, [
-                    'path' => __DIR__.'/../Support/Data/test_ouput_from_nd.json'
+                    'path' => __DIR__.'/../Support/Data/testPipelineFromXlsx.json'
                 ]),
             [
                 new ColumnMapping('region', 'reg', 'string'), 
@@ -681,7 +682,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 ), 
                 new ColumnMapping('téléphone', 'phoneNumber', 'string'),
                 new ColumnMapping('adresse', 'adresse', 'string'),
-                new ColumnMapping('ville', 'country', 'string'), 
+                new ColumnMapping('ville', 'City', 'string'), 
                 new ColumnMapping('age', 'age', 'int'), 
     
                 new ColumnMapping('date de naissance', 'birthday', 'date', 
@@ -745,10 +746,305 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $report = $executor->run($config, $input, $output);
         $this->tester->assertTrue($report->success);
 
-        $file = __DIR__.'/../Support/Data/test_ouput_from_nd.json';
+        $file = __DIR__.'/../Support/Data/testPipelineFromXlsx.json';
         $content = file_get_contents($file);
         $this->tester->assertNotEmpty($content);
 
     }
 
+    public function testPipelineFromCsv()
+    {
+  
+        $config = new PipelineConfig(
+            'test', 
+            1, 
+            DataEndpointType::EXPORT, 
+            true, 
+            PipelineDataFormat::CSV,
+            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, [
+                    'path' => __DIR__.'/../Support/Data/test_input.csv'
+            ]),
+            new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::EXCEL_X, [
+                    'path' => __DIR__.'/../Support/Data/testPipelineFromCsv.xlsx'
+                ]),
+            [
+                new ColumnMapping('region', 'reg', 'string'), 
+                new ColumnMapping('département', 'country', 'string'),
+                new ColumnMapping('code postal', 'zipcode', 'int'), 
+                new ColumnMapping('Nom', 'name', 'string', 
+                    [
+                        new TransformerConfig(name: 'upper'),
+                        new TransformerConfig(name: 'trim'),
+                    ]
+                ), 
+                new ColumnMapping('téléphone', 'phoneNumber', 'string'),
+                new ColumnMapping('adresse', 'adresse', 'string'),
+                new ColumnMapping('ville', 'City', 'string', [
+                    new TransformerConfig(name:'convert', options: [
+                        'from' => 'UTF-8', 'to' => 'ISO-8859-1'
+                    ])
+                ]), 
+                new ColumnMapping('age', 'age', 'int'), 
+    
+                new ColumnMapping('date de naissance', 'birthday', 'date', 
+                    [new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'd/m/Y', 'to' => 'Y-m-d'
+                        ]
+                    ),
+                      new TransformerConfig(name:'date-xls', options: [
+                            'to' => 'Y-m-d'
+                        ]),
+                    ]
+                ),
+                new ColumnMapping('date d\'inscription', 'subscribe', 'date', 
+                    [
+                        new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'd/m/Y', 'to' => 'Y-m-d'
+                        ]),
+                        new TransformerConfig(name:'date-xls', options: [
+                            'to' => 'Y-m-d'
+                        ]),
+                    ]
+                ),
+                new ColumnMapping('salaire', 'salaire', 'number', [
+                    new TransformerConfig(name:'number', options: [
+                        'decimals' => 3
+                    ])
+                ]),
+                  new ColumnMapping('patrimoine', 'patrimoine', 'number', [
+                    new TransformerConfig(name:'number', options: [
+                        'decimals' => 3
+                    ])
+                ]), 
+            ],
+        );
+        $this->tester->assertTrue($config->isExport());
+        $this->tester->assertFalse($config->isImport());
+        $this->tester->assertEquals(12, count($config->columns));
+
+        $input = (new InputRegistry())->create($config);
+        $output = (new OutputRegistry())->create($config);
+        $this->tester->assertInstanceOf(InputInterface::class, $input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+
+        $transformers = [
+            new BooleanColumnTransformer(),
+            new ConvertColumnTransformer(),
+            new DateColumnTransformer(),
+            new DateXlsColumnTransformer(),
+            new LowerColumnTransformer(),
+            new NumberColumnTransformer(),
+            new ReplaceColumnTransformer(),
+            new StrPadColumnTransformer(),
+            new TrimColumnTransformer(),
+            new UpperColumnTransformer()
+        ];
+        $registryTransfromer = new TransformerRegistry($transformers);
+        $columnMapper = new ColumnMapper($registryTransfromer);
+
+        $executor = new PipelineExecutor($columnMapper);
+        $report = $executor->run($config, $input, $output);
+        $this->tester->assertTrue($report->success);
+
+        $file = __DIR__.'/../Support/Data/testPipelineFromCsv.xlsx';
+        $content = file_get_contents($file);
+        $this->tester->assertNotEmpty($content);
+
+    }
+
+     public function testPipelineFromNdJson()
+    {
+  
+        $config = new PipelineConfig(
+            'test', 
+            1, 
+            DataEndpointType::EXPORT, 
+            true, 
+            PipelineDataFormat::CSV,
+            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::NDJSON, [
+                    'path' => __DIR__.'/../Support/Data/test_input_nd.json'
+            ]),
+            new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
+                    'path' => __DIR__.'/../Support/Data/testPipelineFromNdJson.json'
+                ]),
+            [
+                new ColumnMapping('region', 'reg', 'string'), 
+                new ColumnMapping('département', 'country', 'string'),
+                new ColumnMapping('code postal', 'zipcode', 'int'), 
+                new ColumnMapping('Nom', 'name', 'string', 
+                    [
+                        new TransformerConfig(name: 'upper'),
+                        new TransformerConfig(name: 'trim'),
+                    ]
+                ), 
+                new ColumnMapping('téléphone', 'phoneNumber', 'string'),
+                new ColumnMapping('adresse', 'adresse', 'string'),
+                new ColumnMapping('ville', 'City', 'string'), 
+                new ColumnMapping('age', 'age', 'int'), 
+    
+                new ColumnMapping('date de naissance', 'birthday', 'date', 
+                    [new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'd/m/Y', 'to' => 'Y-m-d'
+                        ]
+                    ),
+                      new TransformerConfig(name:'date-xls', options: [
+                            'to' => 'Y-m-d'
+                        ]),
+                    ]
+                ),
+                new ColumnMapping('date d\'inscription', 'subscribe', 'date', 
+                    [
+                        new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'd/m/Y', 'to' => 'Y-m-d'
+                        ]),
+                        new TransformerConfig(name:'date-xls', options: [
+                            'to' => 'Y-m-d'
+                        ]),
+                    ]
+                ),
+                new ColumnMapping('salaire', 'salaire', 'number', [
+                    new TransformerConfig(name:'number', options: [
+                        'decimals' => 3
+                    ])
+                ]),
+                  new ColumnMapping('patrimoine', 'patrimoine', 'number', [
+                    new TransformerConfig(name:'number', options: [
+                        'decimals' => 3
+                    ])
+                ]), 
+            ],
+        );
+        $this->tester->assertTrue($config->isExport());
+        $this->tester->assertFalse($config->isImport());
+        $this->tester->assertEquals(12, count($config->columns));
+
+        $input = (new InputRegistry())->create($config);
+        $output = (new OutputRegistry())->create($config);
+        $this->tester->assertInstanceOf(InputInterface::class, $input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+
+        $transformers = [
+            new BooleanColumnTransformer(),
+            new ConvertColumnTransformer(),
+            new DateColumnTransformer(),
+            new DateXlsColumnTransformer(),
+            new LowerColumnTransformer(),
+            new NumberColumnTransformer(),
+            new ReplaceColumnTransformer(),
+            new StrPadColumnTransformer(),
+            new TrimColumnTransformer(),
+            new UpperColumnTransformer()
+        ];
+        $registryTransfromer = new TransformerRegistry($transformers);
+        $columnMapper = new ColumnMapper($registryTransfromer);
+
+        $executor = new PipelineExecutor($columnMapper);
+        $report = $executor->run($config, $input, $output);
+        $this->tester->assertTrue($report->success);
+
+        $file = __DIR__.'/../Support/Data/testPipelineFromNdJson.json';
+        $content = file_get_contents($file);
+        $this->tester->assertNotEmpty($content);
+    }
+
+    public function testPipelineFromJson()
+    {
+  
+        $config = new PipelineConfig(
+            'test', 
+            1, 
+            DataEndpointType::EXPORT, 
+            true, 
+            PipelineDataFormat::CSV,
+            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
+                    'path' => __DIR__.'/../Support/Data/test_input.json'
+            ]),
+            new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::EXCEL_X, [
+                    'path' => __DIR__.'/../Support/Data/testPipelineFromJson.xlsx'
+                ]),
+            [
+                new ColumnMapping('region', 'reg', 'string'), 
+                new ColumnMapping('département', 'country', 'string'),
+                new ColumnMapping('code postal', 'zipcode', 'int'), 
+                new ColumnMapping('Nom', 'name', 'string', 
+                    [
+                        new TransformerConfig(name: 'upper'),
+                        new TransformerConfig(name: 'trim'),
+                    ]
+                ), 
+                new ColumnMapping('téléphone', 'phoneNumber', 'string'),
+                new ColumnMapping('adresse', 'adresse', 'string'),
+                new ColumnMapping('ville', 'City', 'string'), 
+                new ColumnMapping('age', 'age', 'int'), 
+    
+                new ColumnMapping('date de naissance', 'birthday', 'date', 
+                    [new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'd/m/Y', 'to' => 'Y-m-d'
+                        ]
+                    ),
+                      new TransformerConfig(name:'date-xls', options: [
+                            'to' => 'Y-m-d'
+                        ]),
+                    ]
+                ),
+                new ColumnMapping('date d\'inscription', 'subscribe', 'date', 
+                    [
+                        new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'd/m/Y', 'to' => 'Y-m-d'
+                        ]),
+                        new TransformerConfig(name:'date-xls', options: [
+                            'to' => 'Y-m-d'
+                        ]),
+                    ]
+                ),
+                new ColumnMapping('salaire', 'salaire', 'number', [
+                    new TransformerConfig(name:'number', options: [
+                        'decimals' => 3
+                    ])
+                ]),
+                  new ColumnMapping('patrimoine', 'patrimoine', 'number', [
+                    new TransformerConfig(name:'number', options: [
+                        'decimals' => 3
+                    ])
+                ]), 
+            ],
+        );
+        $this->tester->assertTrue($config->isExport());
+        $this->tester->assertFalse($config->isImport());
+        $this->tester->assertEquals(12, count($config->columns));
+
+        $input = (new InputRegistry())->create($config);
+        $output = (new OutputRegistry())->create($config);
+        $this->tester->assertInstanceOf(InputInterface::class, $input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+
+        $transformers = [
+            new BooleanColumnTransformer(),
+            new ConvertColumnTransformer(),
+            new DateColumnTransformer(),
+            new DateXlsColumnTransformer(),
+            new LowerColumnTransformer(),
+            new NumberColumnTransformer(),
+            new ReplaceColumnTransformer(),
+            new StrPadColumnTransformer(),
+            new TrimColumnTransformer(),
+            new UpperColumnTransformer()
+        ];
+        $registryTransfromer = new TransformerRegistry($transformers);
+        $columnMapper = new ColumnMapper($registryTransfromer);
+
+        $executor = new PipelineExecutor($columnMapper);
+        $report = $executor->run($config, $input, $output);
+        $this->tester->assertTrue($report->success);
+
+        $file = __DIR__.'/../Support/Data/testPipelineFromJson.xlsx';
+        $content = file_get_contents($file);
+        $this->tester->assertNotEmpty($content);
+    }
 }
