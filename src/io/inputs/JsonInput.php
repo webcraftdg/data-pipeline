@@ -33,17 +33,15 @@ class JsonInput implements InputInterface
     /**
      * open
      *
-     * @param  string $filePath
-     * @param  array  $options
-     *
      * @return void
      */
-    public function open(string $filePath, array $options = []): void
+    public function open(): void
     {
         try {
             try {
-                $this->batchSize = ($options['batchSize']) ?? $this->batchSize;
-                $data = json_decode(file_get_contents($filePath));
+                $filePath = ($this->options['path']) ?? '';
+                $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
+                $data = json_decode(file_get_contents($filePath), true);
                 $this->records = ($data['records']) ?? [];
             } catch (Exception $e)  {
                 $this->records = [];

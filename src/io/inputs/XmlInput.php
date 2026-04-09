@@ -17,9 +17,18 @@ use Exception;
 class XmlInput implements InputInterface
 {
 
-
-    
+    /**
+     * $xmlReader
+     *
+     * @var GlobalXMLReader
+     */
     private GlobalXMLReader $xmlReader;
+    
+    /**
+     * $batchSize
+     *
+     * @var int
+     */
     private $batchSize = 250;
 
 
@@ -30,22 +39,20 @@ class XmlInput implements InputInterface
      */
     public function __construct(private array $options = [])
     {
+        $this->xmlReader = new GlobalXMLReader();
     }
 
     /**
-     * open
-     *
-     * @param  string $filePath
-     * @param  array  $options
+     * read
      *
      * @return void
      */
-    public function open(string $filePath, array $options = []): void
+    public function open(): void
     {
         try {
-            $this->xmlReader = new GlobalXMLReader();
+            $filePath = ($this->options['path']) ?? '';
             $this->xmlReader->open($filePath);
-            $this->batchSize = ($options['batchSize']) ?? $this->batchSize;
+            $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
 
         } catch (Exception $e)  {
             throw  $e;

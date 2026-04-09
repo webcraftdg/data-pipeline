@@ -1,6 +1,6 @@
 <?php
 /**
- * NDJsonReader.php
+ * NDJsonInput.php
  *
  * PHP Version 8.2+
  *
@@ -20,7 +20,6 @@ class NDJsonInput implements InputInterface
 
     private $handle;
     private int $batchSize = 250;
-    private $mapColumns = [];
 
          /**
      * constructor
@@ -34,27 +33,14 @@ class NDJsonInput implements InputInterface
     /**
      * open
      *
-     * @param  string $filePath
-     * @param  array  $options
-     *
      * @return void
      */
-    public function open(string $filePath, array $options = []): void
+    public function open(): void
     {
         try {
-            $this->batchSize = ($options['batchSize']) ?? $this->batchSize;
+            $filePath = ($this->options['path']) ?? '';
+            $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
             $this->handle = fopen($filePath, 'rb');
-            $metaLine = fgets($this->handle);
-            if ($metaLine !== false) {
-                try {
-                    $metas = json_decode($metaLine);
-                    if (isset($metas['_type']) === true && $metas['_type'] == 'metas') {
-                        $this->mapColumns = ($metas['columns']) ?? [];
-                    }
-                } catch(Exception $e) {
-                    throw new InvalidArgumentException('NDJsonReader Meta of file not found: check your file is NDJSON ! ');
-                }
-            }
         } catch (Exception $e)  {
             throw  $e;
         }
@@ -71,7 +57,7 @@ class NDJsonInput implements InputInterface
             $batch = [];
             $indexBatch = 0;
             while (($line = fgets($this->handle)) !== false) {
-                $row = json_decode($line);
+                $row = json_decode($line, true);
                 if (isset($row['_type']) === true && $row['_type'] == 'data') {
                     unset($row['_type']);
                     $batch[] = $row;
