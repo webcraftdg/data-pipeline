@@ -20,6 +20,16 @@ class JsonInput implements InputInterface
     private int $batchSize = 250;
     private array $records = [];
 
+
+         /**
+     * constructor
+     *
+     * @param  array          $options
+     */
+    public function __construct(private array $options = [])
+    {
+    }
+    
     /**
      * open
      *

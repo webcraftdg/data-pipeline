@@ -1,6 +1,6 @@
 <?php
 /**
- * CsvWriter.php
+ * XmlOutput.php
  *
  * PHP Version 8.2+
  *
@@ -12,8 +12,9 @@ namespace webcraftdg\dataPipeline\io\outputs;
 
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\XmlWriter;
-use InvalidArgumentException;
+use webcraftdg\dataPipeline\configs\PipelineConfig;
 use Exception;
+use webcraftdg\dataPipeline\contexts\OutputContext;
 
 class XmlOutput implements OutputInterface
 {
@@ -24,25 +25,46 @@ class XmlOutput implements OutputInterface
      */
     private  XmlWriter $writer;
 
+
+       /**
+     * constructor
+     *
+     * @param  PipelineConfig $config
+     * @param  array          $options
+     */
+    public function __construct(private PipelineConfig $config, private array $options = [])
+    {
+        $this->writer = new XmlWriter($config, $options);
+    }
+
  
+    /**
+     * open
+     *
+     * @return void
+     */
     public function open(): void
     {
         try {
-            $path = $writerContext->absolutePath ?? null;
-            if ($path === null) {
-                throw new InvalidArgumentException('CsvWriter params "path" not found');
-            }
-            $this->handle = fopen($path, 'w');
+            $this->writer->open();
         } catch (Exception $e) {
             throw  $e;
         }
     }
 
  
-    public function write(array $row): void
+    /**
+     * write
+     *
+     * @param  array              $row
+     * @param  OutputContext|null $context
+     *
+     * @return void
+     */
+    public function write(array $row, ?OutputContext $context = null): void
     {
         try {
-            fputcsv($this->handle, $row, ';', '"', "\\", \PHP_EOL);
+            $this->writer->write($row, $context);
         } catch (Exception $e) {
             throw  $e;
         }

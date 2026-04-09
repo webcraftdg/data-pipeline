@@ -11,7 +11,6 @@
 namespace webcraftdg\dataPipeline\registry;
 
 use webcraftdg\dataPipeline\interfaces\InputInterface;
-use webcraftdg\dataPipeline\configs\SourceConfig;
 use webcraftdg\dataPipeline\io\inputs\ArrayDataInput;
 use webcraftdg\dataPipeline\io\inputs\ExcelInput;
 use webcraftdg\dataPipeline\io\inputs\JsonInput;
@@ -26,6 +25,8 @@ class InputRegistry
 
     /** @var array<string, string> */
     private array $map = [
+        'xlsx' => ExcelInput::class,
+        'xls' => ExcelInput::class,
         'csv' => ExcelInput::class,
         'json' => JsonInput::class,
         'ndjson' => NDJsonInput::class,

@@ -12,9 +12,8 @@ namespace webcraftdg\dataPipeline\io\writers;
 
 
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\exceptions\OutputResult;
 use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
-use webcraftdg\dataPipeline\formatters\RowJsonFormatter;
+use webcraftdg\dataPipeline\formatters\RowFileFormatter;
 use InvalidArgumentException;
 use Exception;
 use webcraftdg\dataPipeline\contexts\OutputContext;
@@ -25,7 +24,7 @@ class JsonWriter implements DataWriterInterface
      * @var resource | false
      */
     private  $handle;
-    private RowJsonFormatter $rowJsonFormatter;
+    private RowFileFormatter $rowJsonFormatter;
     private bool $firstRecord = true;
 
 
@@ -36,7 +35,7 @@ class JsonWriter implements DataWriterInterface
      */
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
-        $this->rowJsonFormatter = new RowJsonFormatter();
+        $this->rowJsonFormatter = new RowFileFormatter();
     }
 
     public function open(): void
@@ -49,7 +48,6 @@ class JsonWriter implements DataWriterInterface
             $meta =  [
                 'name' => $this->config->name,
                 'version' => $this->config->version,
-                'dateCreate' => date('c', time()),
                 'generatedAt' => date('c'),
             ];
         

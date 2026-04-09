@@ -1,6 +1,6 @@
 <?php
 /**
- * CsvWriter.php
+ * XlsxOutput.php
  *
  * PHP Version 8.2+
  *
@@ -12,11 +12,9 @@ namespace webcraftdg\dataPipeline\io\outputs;
 
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\XlsxWriter;
-use InvalidArgumentException;
-use Exception;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\contexts\OutputContext;
-use webcraftdg\dataPipeline\exceptions\OutputResult;
+use Exception;
 
 class XlsxOutput implements OutputInterface
 {
@@ -39,6 +37,11 @@ class XlsxOutput implements OutputInterface
     }
 
 
+    /**
+     * open
+     *
+     * @return void
+     */
     public function open(): void
     {
         try {
@@ -49,6 +52,14 @@ class XlsxOutput implements OutputInterface
     }
 
  
+    /**
+     * write
+     *
+     * @param  array              $row
+     * @param  OutputContext|null $context
+     *
+     * @return void
+     */
     public function write(array $row, ?OutputContext $context = null): void
     {
         try {

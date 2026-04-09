@@ -30,6 +30,15 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
     private $headers = [];
     private $batchSize = 250;
 
+     /**
+     * constructor
+     *
+     * @param  array          $options
+     */
+    public function __construct(private array $options = [])
+    {
+    }
+
     /**
      * open
      *
@@ -37,10 +46,10 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
      *
      * @return void
      */
-    public function open(array $options = []): void
+    public function open(): void
     {
         try {
-            $filePath = ($options['filePath']) ?? '';
+            $filePath = ($this->options['path']) ?? '';
             $this->spreadsheet = $this->prepareSpreadSheet($filePath);
             if ($this->spreadsheet instanceof Spreadsheet) {
                 $this->sheet = $this->spreadsheet->getActiveSheet();

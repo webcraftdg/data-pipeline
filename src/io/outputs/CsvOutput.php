@@ -1,6 +1,6 @@
 <?php
 /**
- * CsvWriter.php
+ * CsvOutput.php
  *
  * PHP Version 8.2+
  *
@@ -11,12 +11,10 @@
 namespace webcraftdg\dataPipeline\io\outputs;
 
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
-use webcraftdg\dataPipeline\exceptions\OutputResult;
 use webcraftdg\dataPipeline\io\writers\CsvWriter;
-use InvalidArgumentException;
-use Exception;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\contexts\OutputContext;
+use Exception;
 
 class CsvOutput implements OutputInterface
 {

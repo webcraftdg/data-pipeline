@@ -90,7 +90,7 @@ class XlsxWriter implements DataWriterInterface
             /** @var Worksheet $sheet */
             $sheetName = ($context !== null && empty($context->sectionName)) ? $context->sectionName : 'onglet_1';
             $sheet = $this->getOrCreateSheet($sheetName);
-            $this->addHeadersToSheet($sheetName, $sheet, $context);
+            $this->addHeaders($sheetName, $sheet, $context);
             $rowIndex = $this->nextRow($sheetName);
             $rowIndex = ($rowIndex <= 0 )? $context->rowOffset : $rowIndex;
             $colIndex = ($context !== null && empty($context->colOffset))? $context->colOffset : 1;
@@ -130,7 +130,7 @@ class XlsxWriter implements DataWriterInterface
      *
      * @return void
      */
-    private function addHeadersToSheet(string $title, Worksheet $sheet, ?OutputContext $context = null): void
+    private function addHeaders(string $title, Worksheet $sheet, ?OutputContext $context = null): void
     {
 
         try {

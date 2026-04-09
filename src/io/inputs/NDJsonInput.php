@@ -22,6 +22,15 @@ class NDJsonInput implements InputInterface
     private int $batchSize = 250;
     private $mapColumns = [];
 
+         /**
+     * constructor
+     *
+     * @param  array          $options
+     */
+    public function __construct(private array $options = [])
+    {
+    }
+
     /**
      * open
      *

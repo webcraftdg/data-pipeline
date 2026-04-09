@@ -22,6 +22,16 @@ class XmlInput implements InputInterface
     private GlobalXMLReader $xmlReader;
     private $batchSize = 250;
 
+
+         /**
+     * constructor
+     *
+     * @param  array          $options
+     */
+    public function __construct(private array $options = [])
+    {
+    }
+
     /**
      * open
      *

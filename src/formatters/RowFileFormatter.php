@@ -1,6 +1,6 @@
 <?php
 /**
- * Record.php
+ * RowFileFormatter.php
  *
  * PHP Version 8.2+
  *
@@ -14,7 +14,7 @@ use webcraftdg\dataPipeline\interfaces\RowJsonFormatterInterface;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use Exception;
 
-class RowJsonFormatter implements RowJsonFormatterInterface 
+class RowFileFormatter implements RowJsonFormatterInterface 
 {
 
     /**

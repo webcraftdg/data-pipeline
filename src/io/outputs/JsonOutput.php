@@ -1,6 +1,6 @@
 <?php
 /**
- * CsvWriter.php
+ * JsonOutput.php
  *
  * PHP Version 8.2+
  *
@@ -13,9 +13,8 @@ namespace webcraftdg\dataPipeline\io\outputs;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\JsonWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\exceptions\OutputResult;
-use Exception;
 use webcraftdg\dataPipeline\contexts\OutputContext;
+use Exception;
 
 class JsonOutput implements OutputInterface
 {

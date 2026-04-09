@@ -52,6 +52,7 @@ final class PipelineExecutor
     ): ExecutionReport {
         $report = new ExecutionReport(new ErrorCollector());
 
+        $input->open();
         $output->open();
 
         $rowNumber = 0;
@@ -90,6 +91,7 @@ final class PipelineExecutor
         if ($report->errorCollector->hasErrors() === false) {
             $report->success = true;
         }
+        $input->close();
         $output->close();
         return $report;
     }
