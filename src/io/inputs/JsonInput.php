@@ -21,7 +21,7 @@ class JsonInput implements InputInterface
     private array $records = [];
 
 
-         /**
+    /**
      * constructor
      *
      * @param  array          $options
@@ -38,16 +38,12 @@ class JsonInput implements InputInterface
     public function open(): void
     {
         try {
-            try {
-                $filePath = ($this->options['path']) ?? '';
-                $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
-                $data = json_decode(file_get_contents($filePath), true);
-                $this->records = ($data['records']) ?? [];
-            } catch (Exception $e)  {
-                $this->records = [];
-            }
+            $filePath = ($this->options['path']) ?? '';
+            $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
+            $data = json_decode(file_get_contents($filePath), true);
+            $this->records = ($data['records']) ?? [];
         } catch (Exception $e)  {
-            throw  $e;
+            $this->records = [];
         }
     }
 
@@ -58,50 +54,23 @@ class JsonInput implements InputInterface
      */
     public function read(): iterable
     {
-         try {
-            $batch = [];
-            $indexBatch = 0;
+        $batch = [];
+        $indexBatch = 0;
 
-            foreach($this->records as $record) {
-                $batch[] = $this->getRowValues(($record['fields']) ?? []);
-                $indexBatch ++;
-                if ($indexBatch >= $this->batchSize) {
-                    yield $batch;
-                    $batch = [];
-                    $indexBatch = 0;
-                }
+        foreach($this->records as $record) {
+            $record = ($record['record']) ?? [];
+            if (empty($record) === false) {
+                $batch[] = $record;
             }
-            if (empty($batch) === false) {
+            $indexBatch ++;
+            if ($indexBatch >= $this->batchSize) {
                 yield $batch;
+                $batch = [];
+                $indexBatch = 0;
             }
-
-        } catch (Exception $e)  {
-            throw  $e;
         }
-    }
-
-    /**
-     * Undocumented function
-     *
-     * @param  array $fields
-     *
-     * @return array
-     */
-    public function getRowValues(array $fields) : array
-    {
-        try {
-            $row = [];
-            foreach($fields as $field) {
-                $name = ($field['label']) ?? null;
-                $value = ($field['value']) ?? '';
-                if ($name === null) {
-                    continue;
-                }
-                $row[$name] = $value;
-            }
-            return $row;
-        } catch (Exception $e)  {
-            throw  $e;
+        if (empty($batch) === false) {
+            yield $batch;
         }
     }
 
@@ -112,10 +81,6 @@ class JsonInput implements InputInterface
      */
     public function close(): void
     {
-        try {
-            $this->records = [];
-        } catch (Exception $e)  {
-            throw  $e;
-        }
+        $this->records = [];
     }
 }

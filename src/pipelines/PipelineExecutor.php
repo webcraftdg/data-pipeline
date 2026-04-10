@@ -17,7 +17,7 @@ use webcraftdg\dataPipeline\exceptions\ErrorCollector;
 use webcraftdg\dataPipeline\exceptions\PipelineError;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
-use webcraftdg\dataPipeline\interfaces\RowProcessorInterface;
+use webcraftdg\dataPipeline\interfaces\ProcessorInterface;
 use Exception;
 
 final class PipelineExecutor
@@ -40,7 +40,7 @@ final class PipelineExecutor
      * @param  \webcraftdg\dataPipeline\configs\PipelineConfig $config
      * @param  InputInterface                                  $input
      * @param  OutputInterface                                 $output
-     * @param  RowProcessorInterface|null                      $processor
+     * @param  ProcessorInterface|null                      $processor
      *
      * @return ExecutionReport
      */
@@ -48,7 +48,7 @@ final class PipelineExecutor
         PipelineConfig $config,
         InputInterface $input,
         OutputInterface $output,
-        ?RowProcessorInterface $processor = null
+        ?ProcessorInterface $processor = null
     ): ExecutionReport {
         $report = new ExecutionReport(new ErrorCollector());
 

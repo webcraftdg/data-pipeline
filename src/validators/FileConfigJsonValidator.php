@@ -30,48 +30,44 @@ class FileConfigJsonValidator implements ValidatorInterface
      */
     public function validate(): ErrorCollector
     {
-        try {
-            $errorCollector = new ErrorCollector();
-            if (file_exists($this->pathFile) === true) {
-                $json = file_get_contents($this->pathFile);
-                $valid = json_validate($json);
-                if ($valid === false) {
-                    $errorCollector->add(new PipelineError(0, 'validate JSON', 'FORMAT JSON NOT VALID'));
-                } else {
-                    try {
-                        $data = json_decode($json, true);
-                        $attributes = ($data['metas']) ?? null;
-                        $records = ($data['records']) ?? null;
-                        $columns = null;
-                        if (empty($records) === false) {
-                            $record = $records[0];
-                            $columns = ($record['fields']) ?? null;
-                        }
-                        if ($attributes === null || $records === null || $columns === null) {
-                            $errorCollector->add(new PipelineError(0, 'Validate METAS, RECORDS, FIELDS', 'metas or records or fields are not valid'));
-                        }
-                        $attributesRequired = ['name', 'version', 'type', 'source', 'target', 'fileFormat'];
-                        if ($attributes !== null) {
-                            foreach($attributesRequired as $attributeRequired) {
-                                if (in_array($attributeRequired, array_keys($attributes)) === false) {
-                                    $errorCollector->add(new PipelineError(0, 'Metas attribute', $attributeRequired.' is required'));
-                                }
+        $errorCollector = new ErrorCollector();
+        if (file_exists($this->pathFile) === true) {
+            $json = file_get_contents($this->pathFile);
+            $valid = json_validate($json);
+            if ($valid === false) {
+                $errorCollector->add(new PipelineError(0, 'validate JSON', 'FORMAT JSON NOT VALID'));
+            } else {
+                try {
+                    $data = json_decode($json, true);
+                    $attributes = ($data['metas']) ?? null;
+                    $records = ($data['records']) ?? null;
+                    $columns = null;
+                    if (empty($records) === false) {
+                        $record = $records[0];
+                        $columns = ($record['fields']) ?? null;
+                    }
+                    if ($attributes === null || $records === null || $columns === null) {
+                        $errorCollector->add(new PipelineError(0, 'Validate METAS, RECORDS, FIELDS', 'metas or records or fields are not valid'));
+                    }
+                    $attributesRequired = ['name', 'version', 'type', 'source', 'target', 'fileFormat'];
+                    if ($attributes !== null) {
+                        foreach($attributesRequired as $attributeRequired) {
+                            if (in_array($attributeRequired, array_keys($attributes)) === false) {
+                                $errorCollector->add(new PipelineError(0, 'Metas attribute', $attributeRequired.' is required'));
                             }
                         }
-                        if (is_array($columns) === true) {
-                            $errorCollector = $this->validateColumns($columns, $errorCollector);
-                        }
-                    } catch(Exception $e) {
-                        $errorCollector->add(new PipelineError(0, 'FILE CONFIG ERROR', $e->getMessage()));
                     }
+                    if (is_array($columns) === true) {
+                        $errorCollector = $this->validateColumns($columns, $errorCollector);
+                    }
+                } catch(Exception $e) {
+                    $errorCollector->add(new PipelineError(0, 'FILE CONFIG ERROR', $e->getMessage()));
                 }
-            } else {
-                $errorCollector->add(new PipelineError(0, 'FiLE', 'File is required'));
             }
-            return $errorCollector;
-        } catch(Exception $e) {
-            throw $e;
+        } else {
+            $errorCollector->add(new PipelineError(0, 'FiLE', 'File is required'));
         }
+        return $errorCollector;
     }
 
     /**
@@ -84,18 +80,14 @@ class FileConfigJsonValidator implements ValidatorInterface
      */
     protected function validateColumns(array $columns, ErrorCollector $errorCollector) : ErrorCollector
     {
-        try {
-            $attributesRequired = ['inputKey', 'outputKey', 'format'];
-            foreach($columns as $index => $column) {
-                foreach($attributesRequired as $attributeRequired) {
-                    if (in_array($attributeRequired, array_keys($column)) === false) {
-                        $errorCollector->add(new PipelineError(0, 'Column : '.$index, $attributeRequired.' is required'));
-                    }
+        $attributesRequired = ['inputKey', 'outputKey', 'format'];
+        foreach($columns as $index => $column) {
+            foreach($attributesRequired as $attributeRequired) {
+                if (in_array($attributeRequired, array_keys($column)) === false) {
+                    $errorCollector->add(new PipelineError(0, 'Column : '.$index, $attributeRequired.' is required'));
                 }
             }
-            return $errorCollector;
-        } catch(Exception $e) {
-            throw $e;
         }
+        return $errorCollector;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * RowProcessorResult.php
+ * ProcessorResult.php
  *
  * PHP Version 8.3+
  *
@@ -10,7 +10,7 @@
  */
 namespace webcraftdg\dataPipeline\exceptions;
 
-final class RowProcessorResult
+final class ProcessorResult
 {
     /**
      * Contructeur

@@ -11,7 +11,6 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
-use Exception;
 use DateTime;
 
 class DateColumnTransformer implements TransformerInterface
@@ -47,21 +46,16 @@ class DateColumnTransformer implements TransformerInterface
      * @param mixed $value
      * @param array $options
      * @return mixed
-     * @throws Exception
      */
     public function transform(mixed $value, array $options = []): mixed
     {
-        try {
-            $date = $value;
-            if(empty($value) === false) {
-                $dateTime = DateTime::createFromFormat($options['from'], (string)$value);
-                if ($dateTime !== false) {
-                    $date = $dateTime->format($options['to']);
-                }
+        $date = $value;
+        if(empty($value) === false) {
+            $dateTime = DateTime::createFromFormat($options['from'], (string)$value);
+            if ($dateTime !== false) {
+                $date = $dateTime->format($options['to']);
             }
-            return $date;
-        } catch (Exception $e)  {
-            throw  $e;
         }
-    }
+        return $date;
+}
 }

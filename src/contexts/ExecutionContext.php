@@ -10,8 +10,8 @@
  */
 namespace webcraftdg\dataPipeline\contexts;
 
-use Exception;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
+use Exception;
 
 class ExecutionContext
 {

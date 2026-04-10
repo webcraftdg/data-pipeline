@@ -48,5 +48,6 @@ final class ExecutionReport
                 $this->rowsTotal = 0;
                 $this->rowsSuccess = 0;
                 $this->rowsSuccess = 0;
+                $this->rowsError = 0;
         }
 }

@@ -16,9 +16,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\contexts\OutputContext;
 use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
-use InvalidArgumentException;
-use Exception;
 use webcraftdg\dataPipeline\configs\ColumnMapping;
+use InvalidArgumentException;
 
 class XlsxWriter implements DataWriterInterface
 {
@@ -66,13 +65,9 @@ class XlsxWriter implements DataWriterInterface
      */
     public function open(): void
     {
-        try {
-            $this->path = ($this->options['path']) ?? null;
-            if ($this->path === null) {
-                throw new InvalidArgumentException('CsvWriter params "path" not found');
-            }
-        } catch (Exception $e) {
-            throw  $e;
+        $this->path = ($this->options['path']) ?? null;
+        if ($this->path === null) {
+            throw new InvalidArgumentException('CsvWriter params "path" not found');
         }
     }
 
@@ -86,18 +81,14 @@ class XlsxWriter implements DataWriterInterface
      */
     public function write(array $row, ?OutputContext $context = null): void
     {
-        try {
-            /** @var Worksheet $sheet */
-            $sheetName = ($context !== null && empty($context->sectionName)) ? $context->sectionName : 'onglet_1';
-            $sheet = $this->getOrCreateSheet($sheetName);
-            $this->addHeaders($sheetName, $sheet, $context);
-            $rowIndex = $this->nextRow($sheetName);
-            $rowIndex = ($rowIndex <= 0 )? $context->rowOffset : $rowIndex;
-            $colIndex = ($context !== null && empty($context->colOffset))? $context->colOffset : 1;
-            $this->writeRow($row, $sheet, $sheetName, $colIndex, $rowIndex);
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        /** @var Worksheet $sheet */
+        $sheetName = ($context !== null && empty($context->sectionName)) ? $context->sectionName : 'onglet_1';
+        $sheet = $this->getOrCreateSheet($sheetName);
+        $this->addHeaders($sheetName, $sheet, $context);
+        $rowIndex = $this->nextRow($sheetName);
+        $rowIndex = ($rowIndex <= 0 )? $context->rowOffset : $rowIndex;
+        $colIndex = ($context !== null && empty($context->colOffset))? $context->colOffset : 1;
+        $this->writeRow($row, $sheet, $sheetName, $colIndex, $rowIndex);
     }
 
     /**
@@ -132,58 +123,47 @@ class XlsxWriter implements DataWriterInterface
      */
     private function addHeaders(string $title, Worksheet $sheet, ?OutputContext $context = null): void
     {
-
-        try {
-            if (isset($this->sheetHeaders[$title]) === false) {
-                $headers = ($context !== null && empty($context->headers) === false) ? $context->headers : [];
-                if (empty($headers) === true) {
-                    $headers = array_map(function(ColumnMapping $column) {
-                        return $column->outputKey;
-                    }, $this->config->columns);
-                }
-                $rowIndex = $this->nextRow($title);
-                $rowIndex = ($context !== null && empty($context->rowOffset))? $context->rowOffset : 1;
-                $colIndex = ($context !== null && empty($context->colOffset))? $context->colOffset : 1;
-                $this->writeRow($headers, $sheet, $title, $colIndex, $rowIndex);
-                $this->sheetHeaders[$title] = $headers;
+       if (isset($this->sheetHeaders[$title]) === false) {
+            $headers = ($context !== null && empty($context->headers) === false) ? $context->headers : [];
+            if (empty($headers) === true) {
+                $headers = array_map(function(ColumnMapping $column) {
+                    return $column->outputKey;
+                }, $this->config->columns);
             }
-        } catch (Exception $e) {
-            throw  $e;
+            $rowIndex = $this->nextRow($title);
+            $rowIndex = ($context !== null && empty($context->rowOffset))? $context->rowOffset : 1;
+            $colIndex = ($context !== null && empty($context->colOffset))? $context->colOffset : 1;
+            $this->writeRow($headers, $sheet, $title, $colIndex, $rowIndex);
+            $this->sheetHeaders[$title] = $headers;
         }
     }
 
     /**
      * @param string $title
      * @return Worksheet
-     * @throws Exception
      */
     private function getOrCreateSheet(string $title): Worksheet
     {
-
-        try {
-            if (isset($this->sheetsByTitle[$title])) {
-                $sheet =  $this->sheetsByTitle[$title];
+        if (isset($this->sheetsByTitle[$title])) {
+            $sheet =  $this->sheetsByTitle[$title];
+        } else {
+            // Si une feuille existe déjà avec ce titre via PhpSpreadsheet (par sécurité)
+            $sheet = $this->spreadsheet->getSheetByName($title);
+            if ($sheet instanceof Worksheet) {
+                $this->sheetsByTitle[$title] = $sheet;
             } else {
-                // Si une feuille existe déjà avec ce titre via PhpSpreadsheet (par sécurité)
-                $sheet = $this->spreadsheet->getSheetByName($title);
-                if ($sheet instanceof Worksheet) {
-                    $this->sheetsByTitle[$title] = $sheet;
+                $sheetNumber = count($this->spreadsheet->getAllSheets());
+                if ($sheetNumber === 1 && empty($this->sheetsByTitle) === true) {
+                    $sheet = $this->spreadsheet->getActiveSheet();
                 } else {
-                    $sheetNumber = count($this->spreadsheet->getAllSheets());
-                    if ($sheetNumber === 1 && empty($this->sheetsByTitle) === true) {
-                        $sheet = $this->spreadsheet->getActiveSheet();
-                    } else {
-                        // Créer une nouvelle feuille
-                        $sheet = $this->spreadsheet->createSheet($sheetNumber);
-                    }
-                    $sheet->setTitle($title);
-                    $this->sheetsByTitle[$title] = $sheet;
+                    // Créer une nouvelle feuille
+                    $sheet = $this->spreadsheet->createSheet($sheetNumber);
                 }
+                $sheet->setTitle($title);
+                $this->sheetsByTitle[$title] = $sheet;
             }
-            return $sheet;
-        } catch (Exception $e) {
-            throw  $e;
         }
+        return $sheet;
     }
 
     /**

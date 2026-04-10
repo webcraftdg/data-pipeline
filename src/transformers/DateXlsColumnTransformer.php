@@ -12,7 +12,6 @@ namespace webcraftdg\dataPipeline\transformers;
 
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
-use Exception;
 
 class DateXlsColumnTransformer implements TransformerInterface
 {
@@ -46,26 +45,21 @@ class DateXlsColumnTransformer implements TransformerInterface
      * @param mixed $value
      * @param array $options
      * @return mixed
-     * @throws Exception
      */
     public function transform(mixed $value, array $options = []): mixed
     {
-        try {
-            $date = $value;
-            $to = $options['to'] ?? 'Y-m-d';
+        $date = $value;
+        $to = $options['to'] ?? 'Y-m-d';
 
-            // Cas 1 : date Excel (numérique)
-            if (is_numeric($value)) {
-                $date =  Date::excelToDateTimeObject($value)->format($to);
-            } elseif (is_string($value)) {
-                $timestamp = strtotime($value);
-                if ($timestamp !== false) {
-                    $date =  date($to, $timestamp);
-                }
+        // Cas 1 : date Excel (numérique)
+        if (is_numeric($value)) {
+            $date =  Date::excelToDateTimeObject($value)->format($to);
+        } elseif (is_string($value)) {
+            $timestamp = strtotime($value);
+            if ($timestamp !== false) {
+                $date =  date($to, $timestamp);
             }
-            return  $date;
-        } catch (Exception $e)  {
-            throw  $e;
         }
+        return  $date;
     }
 }

@@ -12,13 +12,12 @@ namespace webcraftdg\dataPipeline\configLoaders;
 
 use webcraftdg\dataPipeline\interfaces\ConfigLoaderInterface;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use Exception;
 use webcraftdg\dataPipeline\configs\ColumnMapping;
-use webcraftdg\dataPipeline\configs\LimiterConfig;
 use webcraftdg\dataPipeline\configs\ProcessorConfig;
 use webcraftdg\dataPipeline\configs\SourceConfig;
 use webcraftdg\dataPipeline\configs\TargetConfig;
 use webcraftdg\dataPipeline\configs\TransformerConfig;
+use Exception;
 
 class JsonFileConfigReader implements ConfigLoaderInterface
 {
@@ -75,27 +74,16 @@ class JsonFileConfigReader implements ConfigLoaderInterface
                 );
             }
 
-            if(isset($attributes['limiter']) === true) {
-                $limiter = [
-                    'name' => $attributes['limiter']['name'],
-                    'options' => ($attributes['limiter']['options']) ?? null,
-                ];
-                $limiter = new LimiterConfig(
-                    name:$attributes['limiter']['name'],
-                    options:($attributes['limiter']['options']) ?? null
-                );
-            }
+        
             $config = new PipelineConfig(
                 name: $attributes['name'],
                 version: $attributes['version'], 
                 type: $attributes['type'],
                 stopOnError: (isset($attributes['stopOnError']) === true) ? $attributes['stopOnError'] : false,
-                fileFormat: $attributes['fileFormat'],
                 source: new SourceConfig($attributes['source']['type'], $attributes['source']['name'], $attributes['source']['options']),
                 target: new TargetConfig($attributes['target']['type'], $attributes['source']['name'], $attributes['target']['options']),
                 columns: static::prepareColumns($columns),
-                processor: $processor,
-                limiter: $limiter
+                processor: $processor
                 );
 
                 return $config;

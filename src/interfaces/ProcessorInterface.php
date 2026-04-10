@@ -1,6 +1,6 @@
 <?php
 /**
- * RowProcessorInterface.php
+ * ProcessorInterface.php
  *
  * PHP Version 8.3+
  *
@@ -10,9 +10,9 @@
  */
 namespace webcraftdg\dataPipeline\interfaces;
 
-use webcraftdg\dataPipeline\exceptions\RowProcessorResult;
+use webcraftdg\dataPipeline\exceptions\ProcessorResult;
 
-interface RowProcessorInterface
+interface ProcessorInterface
 {
 
     /**
@@ -21,12 +21,12 @@ interface RowProcessorInterface
     public function getName() : string;
 
     /**
-     * Undocumented function
+     * Process
      *
      * @param  array        $row
-     * @param  array        $params
+     * @param  array        $options
      *
-     * @return RowProcessorResult
+     * @return ProcessorResult
      */
-    public function process(array $row, array $params = []): RowProcessorResult;
+    public function process(array $row, array $options = []): ProcessorResult;
 }

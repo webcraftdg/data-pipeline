@@ -14,7 +14,6 @@ use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\CsvWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\contexts\OutputContext;
-use Exception;
 
 class CsvOutput implements OutputInterface
 {
@@ -40,11 +39,7 @@ class CsvOutput implements OutputInterface
 
     public function open(): void
     {
-        try {
-            $this->writer->open();
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        $this->writer->open();
     }
 
  
@@ -58,11 +53,7 @@ class CsvOutput implements OutputInterface
      */
     public function write(array $row, ?OutputContext $context = null): void
     {
-        try {
-            $this->writer->write($row, $context);
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        $this->writer->write($row, $context);
     }
 
     /**
@@ -72,10 +63,6 @@ class CsvOutput implements OutputInterface
      */
     public function close(): void
     {
-        try {
-            $this->writer->close();
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        $this->writer->close();
     }
 }

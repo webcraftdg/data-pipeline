@@ -13,10 +13,9 @@ namespace webcraftdg\dataPipeline\io\writers;
 
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
-use webcraftdg\dataPipeline\formatters\RowFileFormatter;
-use InvalidArgumentException;
-use Exception;
+use webcraftdg\dataPipeline\configs\ColumnMapping;
 use webcraftdg\dataPipeline\contexts\OutputContext;
+use InvalidArgumentException;
 
 class JsonWriter implements DataWriterInterface
 {
@@ -24,7 +23,6 @@ class JsonWriter implements DataWriterInterface
      * @var resource | false
      */
     private  $handle;
-    private RowFileFormatter $rowJsonFormatter;
     private bool $firstRecord = true;
 
 
@@ -35,29 +33,28 @@ class JsonWriter implements DataWriterInterface
      */
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
-        $this->rowJsonFormatter = new RowFileFormatter();
     }
 
     public function open(): void
     {
-        try {
-            $path = ($this->options['path']) ?? null;
-            if ($path === null) {
-                throw new InvalidArgumentException('JsonWriter params "path" not found');
-            }
-            $meta =  [
-                'name' => $this->config->name,
-                'version' => $this->config->version,
-                'generatedAt' => date('c'),
-            ];
-        
-            $this->handle = fopen($path, 'w');
-            fwrite($this->handle, '{'."\n");
-            fputs($this->handle, '"metas":'.json_encode($meta).",\n");
-            fputs($this->handle, '"records":['."\n");
-        } catch (Exception $e) {
-            throw  $e;
+        $path = ($this->options['path']) ?? null;
+        if ($path === null) {
+            throw new InvalidArgumentException('JsonWriter params "path" not found');
         }
+        $conlumnsMappings = array_map(function(ColumnMapping $column) {
+        return ['inputKey' => $column->inputKey, 'outputKey' => $column->outputKey];
+        }, $this->config->columns);
+        $meta =  [
+            'name' => $this->config->name,
+            'version' => $this->config->version,
+            'columns' => $conlumnsMappings,
+            'generatedAt' => date('c'),
+        ];
+    
+        $this->handle = fopen($path, 'w');
+        fwrite($this->handle, '{'."\n");
+        fputs($this->handle, '"metas":'.json_encode($meta).",\n");
+        fputs($this->handle, '"records":['."\n");
     }
 
 
@@ -71,17 +68,12 @@ class JsonWriter implements DataWriterInterface
      */
     public function write(array $row, ?OutputContext $context = null): void
     {
-        try {
-            if (empty($row) === false) {
-                $row = $this->rowJsonFormatter->format($row, $this->config);
-                if ($this->firstRecord === false) {
-                    fputs($this->handle, ','."\n");
-                }
-                fputs($this->handle, json_encode(['fields' => $this->prepareRow($row)]));
-                $this->firstRecord = false;
+        if (empty($row) === false) {
+            if ($this->firstRecord === false) {
+                fputs($this->handle, ','."\n");
             }
-        } catch (Exception $e) {
-            throw  $e;
+            fputs($this->handle, json_encode(['record' => $row]));
+            $this->firstRecord = false;
         }
     }
 
@@ -94,19 +86,15 @@ class JsonWriter implements DataWriterInterface
      */
     protected function prepareRow(array $rawRow) : array
     {
-         try {
-            $fields = [];
-            foreach ($rawRow as $fieldName => $item) {
-                $field = [];
-                $field['name'] = ($item['name']) ?? '';
-                $field['label'] = $fieldName;
-                $field['value'] = ($item['value']) ?? '';
-                $fields[] = $field;
-            }
-            return $fields;
-        } catch (Exception $e) {
-            throw  $e;
+        $fields = [];
+        foreach ($rawRow as $fieldName => $item) {
+            $field = [];
+            $field['name'] = ($item['name']) ?? '';
+            $field['label'] = $fieldName;
+            $field['value'] = ($item['value']) ?? '';
+            $fields[] = $field;
         }
+        return $fields;
     }
 
     /**
@@ -116,11 +104,7 @@ class JsonWriter implements DataWriterInterface
      */
     public function close(): void
     {
-        try {
-            fputs($this->handle, "\n".']}');
-            fclose($this->handle);
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        fputs($this->handle, "\n".']}');
+        fclose($this->handle);
     }
 }

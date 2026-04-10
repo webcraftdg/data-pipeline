@@ -12,8 +12,6 @@ namespace webcraftdg\dataPipeline\io\inputs;
 
 
 use webcraftdg\dataPipeline\interfaces\InputInterface;
-use InvalidArgumentException;
-use Exception;
 
 class NDJsonInput implements InputInterface
 {
@@ -21,7 +19,7 @@ class NDJsonInput implements InputInterface
     private $handle;
     private int $batchSize = 250;
 
-         /**
+    /**
      * constructor
      *
      * @param  array          $options
@@ -37,13 +35,9 @@ class NDJsonInput implements InputInterface
      */
     public function open(): void
     {
-        try {
-            $filePath = ($this->options['path']) ?? '';
-            $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
-            $this->handle = fopen($filePath, 'rb');
-        } catch (Exception $e)  {
-            throw  $e;
-        }
+        $filePath = ($this->options['path']) ?? '';
+        $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
+        $this->handle = fopen($filePath, 'rb');
     }
 
     /**
@@ -53,27 +47,23 @@ class NDJsonInput implements InputInterface
      */
     public function read(): iterable
     {
-         try {
-            $batch = [];
-            $indexBatch = 0;
-            while (($line = fgets($this->handle)) !== false) {
-                $row = json_decode($line, true);
-                if (isset($row['_type']) === true && $row['_type'] == 'data') {
-                    unset($row['_type']);
-                    $batch[] = $row;
-                    $indexBatch++;
-                     if ($indexBatch >= $this->batchSize) {
-                        yield $batch;
-                        $batch = [];
-                        $indexBatch = 0;
-                    }
+        $batch = [];
+        $indexBatch = 0;
+        while (($line = fgets($this->handle)) !== false) {
+            $row = json_decode($line, true);
+            if (isset($row['_type']) === true && $row['_type'] == 'data') {
+                unset($row['_type']);
+                $batch[] = $row;
+                $indexBatch++;
+                    if ($indexBatch >= $this->batchSize) {
+                    yield $batch;
+                    $batch = [];
+                    $indexBatch = 0;
                 }
             }
-            if (empty($batch) === false) {
-                yield $batch;
-            }
-        } catch (Exception $e)  {
-            throw  $e;
+        }
+        if (empty($batch) === false) {
+            yield $batch;
         }
     }
 
@@ -84,10 +74,6 @@ class NDJsonInput implements InputInterface
      */
     public function close(): void
     {
-        try {
-            fclose($this->handle);
-        } catch (Exception $e)  {
-            throw  $e;
-        }
+        fclose($this->handle);
     }
 }

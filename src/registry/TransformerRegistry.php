@@ -12,34 +12,32 @@ namespace webcraftdg\dataPipeline\registry;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
 
-use Exception;
-use webcraftdg\dataPipeline\transformers\BooleanColumnTransformer;
-use webcraftdg\dataPipeline\transformers\DateColumnTransformer;
-use webcraftdg\dataPipeline\transformers\DateXlsColumnTransformer;
-use webcraftdg\dataPipeline\transformers\LowerColumnTransformer;
-use webcraftdg\dataPipeline\transformers\NumberColumnTransformer;
-use webcraftdg\dataPipeline\transformers\ReplaceColumnTransformer;
-use webcraftdg\dataPipeline\transformers\StrPadColumnTransformer;
-use webcraftdg\dataPipeline\transformers\TrimColumnTransformer;
-use webcraftdg\dataPipeline\transformers\UpperColumnTransformer;
-
 class TransformerRegistry
 {
     /** @var TransformerInterface[] */
-    private array $transformers = [];
+    private array $map = [];
 
     /**
      * @param array $transformers
-     * @throws Exception
      */
     public function __construct(array $transformers)
     {
-        try {
-            foreach ($transformers as $transformer) {
-                $this->transformers[$transformer->getName()] = $transformer;
-            }
-        } catch (Exception $e)  {
-            throw  $e;
+        foreach ($transformers as $transformer) {
+            $this->map[$transformer->getName()] = $transformer;
+        }
+    }
+
+    /**
+     * register
+     *
+     * @param  TransformerInterface $transformer
+     *
+     * @return void
+     */
+    public function register(TransformerInterface $transformer) : void
+    {
+        if (isset($this->map[$transformer->getName()]) === false) {
+            $this->map[$transformer->getName()] = $transformer;
         }
     }
 
@@ -48,19 +46,14 @@ class TransformerRegistry
      * @param mixed $value
      * @param array $options
      * @return mixed
-     * @throws Exception
      */
     public function apply(string $name, mixed $value, mixed $options = []): mixed
     {
-        try {
-            $newValue = $value;
-            if (empty($name) === false && isset($this->transformers[$name]) === true) {
-                $newValue = $this->transformers[$name]->transform($value, $options);
-            }
-            return $newValue;
-        } catch (Exception $e)  {
-            throw  $e;
+        $newValue = $value;
+        if (empty($name) === false && isset($this->map[$name]) === true) {
+            $newValue = $this->map[$name]->transform($value, $options);
         }
+        return $newValue;
     }
 
     /**
@@ -69,28 +62,18 @@ class TransformerRegistry
      */
     public function getTransformers(): array
     {
-        try {
-            return $this->transformers;
-        } catch (Exception $e)  {
-            throw  $e;
-        }
+        return $this->map;
     }
 
-    /**
-     * registry
+       /**
+     * has
      *
-     * @param  TransformerInterface $transformer
+     * @param  string $name
      *
-     * @return void
+     * @return bool
      */
-    public function registry(TransformerInterface $transformer) : void
+    public function has(string $name): bool
     {
-        try {
-            if (isset($this->transformers[$transformer->getName()]) === false) {
-                $this->transformers[$transformer->getName()] = $transformer;
-            }
-        } catch(Exception $e) {
-            throw $e;
-        }
+        return isset($this->map[$name]);
     }
 }

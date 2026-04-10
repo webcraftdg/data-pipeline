@@ -11,8 +11,6 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
-use Exception;
-use DateTime;
 
 class ConvertColumnTransformer implements TransformerInterface
 {
@@ -47,17 +45,12 @@ class ConvertColumnTransformer implements TransformerInterface
      * @param mixed $value
      * @param array $options
      * @return mixed
-     * @throws Exception
      */
     public function transform(mixed $value, array $options = []): mixed
     {
-        try {
-            if(empty($value) === false) {
-                $value = mb_convert_encoding($value, $options['to'], $options['from']);
-            }
-            return $value;
-        } catch (Exception $e)  {
-            throw  $e;
+        if(empty($value) === false) {
+            $value = mb_convert_encoding($value, $options['to'], $options['from']);
         }
+        return $value;
     }
 }

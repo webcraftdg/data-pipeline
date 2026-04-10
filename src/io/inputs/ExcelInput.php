@@ -17,7 +17,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\InputSpreadsheetInterface;
-use Exception;
 use InvalidArgumentException;
 
 class ExcelInput implements InputInterface, InputSpreadsheetInterface
@@ -26,9 +25,12 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
 
     private Spreadsheet $spreadsheet;
     private Worksheet $sheet;
-    private $maxColumns = 0;
-    private $headers = [];
-    private $batchSize = 250;
+    private int $maxColumns = 0;
+    private array $headers = [];
+    private int $batchSize = 250;
+    private string $delimiter = ';';
+    private string $enclosure = '"';
+    private string $inputEncoding = 'ISO-8859-1';
 
      /**
      * constructor
@@ -37,6 +39,10 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
      */
     public function __construct(private array $options = [])
     {
+        $this->headers = ($options['headers']) ?? [];
+        $this->delimiter = ($options['delimiter']) ?? ';';
+        $this->enclosure = ($options['enclosure']) ?? '"';
+        $this->inputEncoding = ($options['inputEncoding']) ?? 'ISO-8859-1';
     }
 
     /**
@@ -48,22 +54,17 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
      */
     public function open(): void
     {
-        try {
-            $filePath = ($this->options['path']) ?? '';
-            $this->spreadsheet = $this->prepareSpreadSheet($filePath);
-            if ($this->spreadsheet instanceof Spreadsheet) {
-                $this->sheet = $this->spreadsheet->getActiveSheet();
-            }
-            if (isset($options['maxColumns']) === true) {
-                $this->maxColumns = ($options['maxColumns']);;
-            } elseif($this->sheet instanceof Worksheet) {
-                $this->maxColumns = Coordinate::columnIndexFromString($this->sheet->getHighestColumn());
-            }
-            $this->headers = $this->getHeaders();
-
-        } catch (Exception $e)  {
-            throw  $e;
+         $filePath = ($this->options['path']) ?? '';
+        $this->spreadsheet = $this->prepareSpreadSheet($filePath);
+        if ($this->spreadsheet instanceof Spreadsheet) {
+            $this->sheet = $this->spreadsheet->getActiveSheet();
         }
+        if (isset($options['maxColumns']) === true) {
+            $this->maxColumns = ($options['maxColumns']);;
+        } elseif($this->sheet instanceof Worksheet) {
+            $this->maxColumns = Coordinate::columnIndexFromString($this->sheet->getHighestColumn());
+        }
+        $this->headers = $this->getHeaders();
     }
 
     /**
@@ -73,28 +74,22 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
      */
     public function read(): iterable
     {
-         try {
-    
-            $batch = [];
-            $indexBatch = 0;
-            $startRow = $this->getStartRow();
-            $endRow = $this->getEndRow($this->sheet);
-            for($i = $startRow;$i <= $endRow; $i ++) {
-                $batch[] = $this->getRowValues($i);
-                $indexBatch ++;
-                if ($indexBatch >= $this->batchSize) {
-                    yield $batch;
-                    $batch = [];
-                    $indexBatch = 0;
-                }
-            }
-            
-            if (empty($batch) === false) {
+        $batch = [];
+        $indexBatch = 0;
+        $startRow = $this->getStartRow();
+        $endRow = $this->getEndRow($this->sheet);
+        for($i = $startRow;$i <= $endRow; $i ++) {
+            $batch[] = $this->getRowValues($i);
+            $indexBatch ++;
+            if ($indexBatch >= $this->batchSize) {
                 yield $batch;
+                $batch = [];
+                $indexBatch = 0;
             }
-
-        } catch (Exception $e)  {
-            throw  $e;
+        }
+        
+        if (empty($batch) === false) {
+            yield $batch;
         }
     }
 
@@ -105,17 +100,13 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
      */
     public function getHeaders(): array
     {
-        try {
-            $headers = [];
-            if ($this->sheet instanceof Worksheet) {
-                for($i = $this->getStartColumn();$i <= $this->maxColumns; $i++) {
-                    $headers[] = $this->sheet->getCell([$i, 1])->getValue();
-                }
+        $headers = $this->headers;
+        if (empty($headers) === true && $this->sheet instanceof Worksheet) {
+            for($i = $this->getStartColumn();$i <= $this->maxColumns; $i++) {
+                $headers[] = $this->sheet->getCell([$i, 1])->getValue();
             }
-            return $headers;
-        } catch (Exception $e)  {
-            throw  $e;
         }
+        return $headers;
     }
 
 
@@ -124,24 +115,19 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
      *
      * @param int $rowNumber
      * @return array
-     * @throws Exception
      */
     protected function getRowValues($rowNumber) : array
     {
-        try {
-            $row = [];
-            $startCol = $this->getStartColumn();
-            $endCol = $this->maxColumns;
-            $indexHeader = 0;
-            for ($i = $startCol; $i <= $endCol; $i ++) {
-                $value = $this->sheet->getCell([$i, $rowNumber])->getValue();
-                $row[$this->headers[$indexHeader]]  = $value;
-                $indexHeader ++;
-            }
-            return $row;
-        } catch (Exception $e)  {
-            throw  $e;
+        $row = [];
+        $startCol = $this->getStartColumn();
+        $endCol = $this->maxColumns;
+        $indexHeader = 0;
+        for ($i = $startCol; $i <= $endCol; $i ++) {
+            $value = $this->sheet->getCell([$i, $rowNumber])->getValue();
+            $row[$this->headers[$indexHeader]]  = $value;
+            $indexHeader ++;
         }
+        return $row;
     }
 
 
@@ -152,50 +138,41 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
      * @return Spreadsheet
      * @throws NotSupportedException
      */
-    public static function prepareSpreadSheet(string $filePath): Spreadsheet
+    public function prepareSpreadSheet(string $filePath): Spreadsheet
     {
-        try {
-            $spreadsheet = null;
-            if (file_exists($filePath) === true) {
-                $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-                switch ($extension) {
-                    case 'xlsx':
-                    case 'xls':
-                        $spreadsheet = IOFactory::load($filePath);
-                        break;
-                    case 'csv':
-                    case 'txt':
-                        $reader = new Csv();
-                        $reader->setDelimiter(';');
-                        $reader->setEnclosure('');
-                        $reader->setInputEncoding('CP1252');
-                        $reader->setSheetIndex(0);
-                        $reader->setReadDataOnly(true);
-                        $spreadsheet = $reader->load($filePath);
-                        break;
-                    default:
-                        throw new InvalidArgumentException("Extension non supportée : " . $extension);
-                }
+        $spreadsheet = null;
+        if (file_exists($filePath) === true) {
+            $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+            switch ($extension) {
+                case 'xlsx':
+                case 'xls':
+                    $spreadsheet = IOFactory::load($filePath);
+                    break;
+                case 'csv':
+                case 'txt':
+                    $reader = new Csv();
+                    $reader->setDelimiter($this->delimiter);
+                    $reader->setEnclosure($this->enclosure);
+                    $reader->setInputEncoding($this->inputEncoding);
+                    $reader->setSheetIndex(0);
+                    $reader->setReadDataOnly(true);
+                    $spreadsheet = $reader->load($filePath);
+                    break;
+                default:
+                    throw new InvalidArgumentException("Extension non supportée : " . $extension);
             }
-            return $spreadsheet;
-        } catch (Exception $e)  {
-            throw  $e;
         }
+        return $spreadsheet;
     }
 
     /**
      * Get start row
      *
      * @return int
-     * @throws Exception
      */
     public function getStartRow(): int
     {
-        try {
-            return 2;
-        } catch (Exception $e)  {
-            throw  $e;
-        }
+        return 2;
     }
 
     /**
@@ -203,30 +180,20 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
      *
      * @param Worksheet $worksheet
      * @return int
-     * @throws Exception
      */
     public function getEndRow(Worksheet $worksheet): int
     {
-        try {
-            return $worksheet->getHighestRow();
-        } catch (Exception $e)  {
-            throw  $e;
-        }
+        return $worksheet->getHighestRow();
     }
 
     /**
      * Get start column
      *
      * @return int
-     * @throws Exception
      */
     public function getStartColumn(): int
     {
-        try {
-            return 1;
-        } catch (Exception $e)  {
-            throw  $e;
-        }
+        return 1;
     }
 
     /**
@@ -236,13 +203,9 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
      */
     public function close(): void
     {
-        try {
-            if ($this->spreadsheet instanceof Spreadsheet) {
-                $this->spreadsheet->disconnectWorksheets();
-                unset($this->spreadsheet);
-            }
-        } catch (Exception $e)  {
-            throw  $e;
+        if ($this->spreadsheet instanceof Spreadsheet) {
+            $this->spreadsheet->disconnectWorksheets();
+            unset($this->spreadsheet);
         }
     }
 }

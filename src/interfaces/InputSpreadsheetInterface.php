@@ -42,5 +42,5 @@ interface InputSpreadsheetInterface
      *
      * @return Spreadsheet
      */
-    public static function prepareSpreadSheet(string $filePath): Spreadsheet;
+    public function prepareSpreadSheet(string $filePath): Spreadsheet;
 }

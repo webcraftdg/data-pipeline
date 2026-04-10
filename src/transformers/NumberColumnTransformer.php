@@ -11,7 +11,6 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
-use Exception;
 
 class NumberColumnTransformer implements TransformerInterface
 {
@@ -45,19 +44,13 @@ class NumberColumnTransformer implements TransformerInterface
      * @param mixed $value
      * @param array $options
      * @return mixed
-     * @throws Exception
      */
     public function transform(mixed $value, array $options = []): mixed
     {
-        try {
-            if (is_numeric($value) === false) {
-                $value = (float)$value;
-            }
-            $decimals = $options['decimals'] ?? 0;
-            return $decimals !== null ? number_format((float)$value, $decimals, '.', '')
-                : $value;
-        } catch (Exception $e)  {
-            throw  $e;
+        if (is_numeric($value) === false) {
+            $value = (float)$value;
         }
+        $decimals = $options['decimals'] ?? 0;
+        return $decimals !== null ? number_format((float)$value, $decimals, '.', '') : $value;
     }
 }

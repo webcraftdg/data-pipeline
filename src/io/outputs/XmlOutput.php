@@ -13,7 +13,6 @@ namespace webcraftdg\dataPipeline\io\outputs;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\XmlWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use Exception;
 use webcraftdg\dataPipeline\contexts\OutputContext;
 
 class XmlOutput implements OutputInterface
@@ -45,11 +44,7 @@ class XmlOutput implements OutputInterface
      */
     public function open(): void
     {
-        try {
-            $this->writer->open();
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        $this->writer->open();
     }
 
  
@@ -63,11 +58,7 @@ class XmlOutput implements OutputInterface
      */
     public function write(array $row, ?OutputContext $context = null): void
     {
-        try {
-            $this->writer->write($row, $context);
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        $this->writer->write($row, $context);
     }
 
     /**
@@ -77,10 +68,6 @@ class XmlOutput implements OutputInterface
      */
     public function close(): void
     {
-        try {
-            $this->writer->close();
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        $this->writer->close();
     }
 }

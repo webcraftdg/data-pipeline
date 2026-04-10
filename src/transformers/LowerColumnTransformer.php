@@ -11,7 +11,6 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
-use Exception;
 
 class LowerColumnTransformer implements TransformerInterface
 {
@@ -43,14 +42,9 @@ class LowerColumnTransformer implements TransformerInterface
      * @param mixed $value
      * @param array $options
      * @return mixed
-     * @throws Exception
      */
     public function transform(mixed $value, array $options = []): mixed
     {
-        try {
-            return is_string($value) ? mb_strtolower($value) : $value;
-        } catch (Exception $e)  {
-            throw  $e;
-        }
+        return is_string($value) ? mb_strtolower($value) : $value;
     }
 }

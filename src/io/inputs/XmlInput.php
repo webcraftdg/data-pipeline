@@ -32,7 +32,7 @@ class XmlInput implements InputInterface
     private $batchSize = 250;
 
 
-         /**
+    /**
      * constructor
      *
      * @param  array          $options
@@ -49,14 +49,9 @@ class XmlInput implements InputInterface
      */
     public function open(): void
     {
-        try {
-            $filePath = ($this->options['path']) ?? '';
-            $this->xmlReader->open($filePath);
-            $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
-
-        } catch (Exception $e)  {
-            throw  $e;
-        }
+        $filePath = ($this->options['path']) ?? '';
+        $this->xmlReader->open($filePath);
+        $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
     }
 
     /**
@@ -66,33 +61,30 @@ class XmlInput implements InputInterface
      */
     public function read(): iterable
     {
-         try {
-    
-            $batch = [];
-            $indexBatch = 0;
-    
-            while ($this->xmlReader->read() === true) {
-                    if (
-                        $this->xmlReader->nodeType === GlobalXMLReader::ELEMENT
-                        && $this->xmlReader->name === 'fields'
-                    ) {
-                        $batch[] = $this->getRowValues();
-                        $indexBatch ++;
-                        if ($indexBatch >= $this->batchSize) {
-                            yield $batch;
-                            $batch = [];
-                            $indexBatch = 0;
-                        }
-                    }
-              
-            }
-            
-            if (empty($batch) === false) {
-                yield $batch;
-            }
+     
+        $batch = [];
+        $indexBatch = 0;
 
-        } catch (Exception $e)  {
-            throw  $e;
+        while ($this->xmlReader->read() === true) {
+                $nodeType = $this->xmlReader->nodeType;
+                $nodeName = $this->xmlReader->name;
+                if (
+                    $nodeType === GlobalXMLReader::ELEMENT
+                    && $nodeName === 'record'
+                ) {
+                    $batch[] = $this->getRowValues();
+                    $indexBatch ++;
+                    if ($indexBatch >= $this->batchSize) {
+                        yield $batch;
+                        $batch = [];
+                        $indexBatch = 0;
+                    }
+                }
+            
+        }
+        
+        if (empty($batch) === false) {
+            yield $batch;
         }
     }
 
@@ -103,32 +95,30 @@ class XmlInput implements InputInterface
      */
     public function getRowValues() : array
     {
-        try {
-            $row = [];
-            $depth = $this->xmlReader->depth;
+        $row = [];
+        $depth = $this->xmlReader->depth;
 
-            while ($this->xmlReader->read()) {
-                // fin du record
-                if ($this->xmlReader->nodeType === GlobalXMLReader::END_ELEMENT 
-                    && $this->xmlReader->name === 'fields' 
-                    && $this->xmlReader->depth === $depth) {
-                    break;
-                }
-
-                if ($this->xmlReader->nodeType === GlobalXMLReader::ELEMENT && $this->xmlReader->name === 'field') {
-                    $name = $this->xmlReader->getAttribute('label');
-                    if ($name === null || $name === '') {
-                        continue;
-                    }
-
-                    $value = $this->readFieldValue();
-                    $row[$name] = $value;
-                }
+        while ($this->xmlReader->read()) {
+            // fin du record
+            $nodeType = $this->xmlReader->nodeType;
+            $nodeName = $this->xmlReader->name;
+            if ($nodeType === GlobalXMLReader::END_ELEMENT 
+                && $nodeName === 'record' 
+                && $this->xmlReader->depth === $depth) {
+                break;
             }
-            return $row;
-        } catch (Exception $e)  {
-            throw  $e;
+
+            if ($nodeType === GlobalXMLReader::ELEMENT && $nodeName === 'field') {
+                $name = $this->xmlReader->getAttribute('name');
+                if ($name === null || $name === '') {
+                    continue;
+                }
+
+                $value = $this->readFieldValue();
+                $row[$name] = $value;
+            }
         }
+        return $row;
     }
 
     /**
@@ -139,25 +129,21 @@ class XmlInput implements InputInterface
     private function readFieldValue(): string
     {
 
-     try {
-            $value = '';
+        $value = '';
 
-            while ($this->xmlReader->read()) {
-                if ($this->xmlReader->nodeType === GlobalXMLReader::TEXT || $this->xmlReader->nodeType === GlobalXMLReader::CDATA) {
-                    $value .= $this->xmlReader->value;
-                }
-                if (
-                    $this->xmlReader->nodeType === GlobalXMLReader::END_ELEMENT
-                    && $this->xmlReader->name === 'field'
-                ) {
-                    break;
-                }
+        while ($this->xmlReader->read()) {
+            if ($this->xmlReader->nodeType === GlobalXMLReader::TEXT || $this->xmlReader->nodeType === GlobalXMLReader::CDATA) {
+                $value .= $this->xmlReader->value;
             }
-
-            return $value; 
-        } catch (Exception $e)  {
-            throw  $e;
+            if (
+                $this->xmlReader->nodeType === GlobalXMLReader::END_ELEMENT
+                && $this->xmlReader->name === 'field'
+            ) {
+                break;
+            }
         }
+
+        return $value; 
     }
 
     /**
@@ -167,10 +153,6 @@ class XmlInput implements InputInterface
      */
     public function close(): void
     {
-        try {
-            $this->xmlReader->close();
-        } catch (Exception $e)  {
-            throw  $e;
-        }
+        $this->xmlReader->close();
     }
 }

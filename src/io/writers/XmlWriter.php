@@ -12,11 +12,9 @@ namespace webcraftdg\dataPipeline\io\writers;
 
 use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\formatters\RowFileFormatter;
 use webcraftdg\dataPipeline\contexts\OutputContext;
 use XMLWriter as GlobalXMLWriter;
 use InvalidArgumentException;
-use Exception;
 
 class XmlWriter implements DataWriterInterface
 {
@@ -24,7 +22,6 @@ class XmlWriter implements DataWriterInterface
      * @var xmlWriter
      */
     private GlobalXMLWriter $xmlWriter;
-    private RowFileFormatter $rowFileFormatter;
 
 
     /**
@@ -37,7 +34,6 @@ class XmlWriter implements DataWriterInterface
     {
         $xmlWriter = new GlobalXMLWriter();
         $this->xmlWriter = $xmlWriter;
-        $this->rowFileFormatter = new RowFileFormatter();
     }
 
      /**
@@ -49,23 +45,19 @@ class XmlWriter implements DataWriterInterface
      */
     public function open(): void
     {
-        try {
-            $path = ($this->options['path']) ?? null;
-            if ($path === null) {
-                throw new InvalidArgumentException('XmlWriter params "path" not found');
-            }
-            $this->xmlWriter->openUri($path);
-            $this->xmlWriter->startDocument('1.0', 'UTF-8');
-            $this->xmlWriter->startElement('export');
-            $this->xmlWriter->writeAttribute('name', $this->config->name);
-            $this->xmlWriter->writeAttribute('version', $this->config->version);
-            $this->xmlWriter->writeAttribute('generated_at', date('c'));
-            $this->xmlWriter->setIndent(true);          // Active l'indentation
-            $this->xmlWriter->startElement('records');
-            $this->xmlWriter->setIndentString('  ');
-        } catch (Exception $e) {
-            throw  $e;
+        $path = ($this->options['path']) ?? null;
+        if ($path === null) {
+            throw new InvalidArgumentException('XmlWriter params "path" not found');
         }
+        $this->xmlWriter->openUri($path);
+        $this->xmlWriter->startDocument('1.0', 'UTF-8');
+        $this->xmlWriter->startElement('export');
+        $this->xmlWriter->writeAttribute('name', $this->config->name);
+        $this->xmlWriter->writeAttribute('version', $this->config->version);
+        $this->xmlWriter->writeAttribute('generated_at', date('c'));
+        $this->xmlWriter->setIndent(true);          // Active l'indentation
+        $this->xmlWriter->startElement('records');
+        $this->xmlWriter->setIndentString('  ');
     }
 
     /**
@@ -78,22 +70,15 @@ class XmlWriter implements DataWriterInterface
      */
     public function write(array $row, ?OutputContext $context = null): void
     {
-        try {
-            if (empty($row) === false) {
-                $row = $this->rowFileFormatter->format($row, $this->config);
-                $this->xmlWriter->startElement('fields');
-                foreach ($row as $field => $item) {
-                    $this->xmlWriter->startElement('field');
-                    $this->xmlWriter->writeAttribute('name', ($item['name']) ?? $field);
-                    $this->xmlWriter->writeAttribute('label', $field);
-                    $value = ($item['value']) ?? '';
-                    $this->xmlWriter->text($value);
-                    $this->xmlWriter->endElement();
-                }
+        if (empty($row) === false) {
+            $this->xmlWriter->startElement('record');
+            foreach ($row as $field => $value) {
+                $this->xmlWriter->startElement('field');
+                $this->xmlWriter->writeAttribute('name', $field);
+                $this->xmlWriter->text($value);
                 $this->xmlWriter->endElement();
             }
-        } catch (Exception $e) {
-            throw  $e;
+            $this->xmlWriter->endElement();
         }
     }
 
@@ -104,13 +89,9 @@ class XmlWriter implements DataWriterInterface
      */
     public function close(): void
     {
-        try {
-            $this->xmlWriter->endElement(); // rows
-            $this->xmlWriter->endElement(); // </export>
-            $this->xmlWriter->endDocument();
-            $this->xmlWriter->flush();
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        $this->xmlWriter->endElement(); // rows
+        $this->xmlWriter->endElement(); // </export>
+        $this->xmlWriter->endDocument();
+        $this->xmlWriter->flush();
     }
 }

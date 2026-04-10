@@ -21,12 +21,10 @@ class PipelineConfig
      * @param  int                  $version
      * @param  string               $type
      * @param  bool                 $stopOnError
-     * @param  string               $fileFormat
      * @param  SourceConfig         $source
      * @param  TargetConfig         $target
      * @param  array                $columns
      * @param  ProcessorConfig|null $processor
-     * @param  LimiterConfig|null   $limiter
      * @param  array                $options
      */
     public function __construct(
@@ -34,12 +32,10 @@ class PipelineConfig
         public int $version,
         public string $type,
         public bool $stopOnError,
-        public string $fileFormat,
         public SourceConfig $source,
         public TargetConfig $target,
         public array $columns = [],
         public ?ProcessorConfig $processor = null,
-        public ?LimiterConfig $limiter = null,
         public array $options = []
     )
     {

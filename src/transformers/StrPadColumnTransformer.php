@@ -11,7 +11,6 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
-use Exception;
 
 class StrPadColumnTransformer implements TransformerInterface
 {
@@ -51,20 +50,15 @@ class StrPadColumnTransformer implements TransformerInterface
      * @param mixed $value
      * @param array $options
      * @return mixed
-     * @throws Exception
      */
     public function transform(mixed $value, array $options = []): mixed
     {
-        try {
-            if(empty($value) === false) {
-                $length = $options['length'] ?? 0;
-                $string = $options['string'] ?? '';
-                $type = $options['type'] ?? STR_PAD_RIGHT;
-                $value = str_pad($value, $length, $string, $type);
-            }
-            return $value;
-        } catch (Exception $e)  {
-            throw  $e;
+        if(empty($value) === false) {
+            $length = $options['length'] ?? 0;
+            $string = $options['string'] ?? '';
+            $type = $options['type'] ?? STR_PAD_RIGHT;
+            $value = str_pad($value, $length, $string, $type);
         }
+        return $value;
     }
 }

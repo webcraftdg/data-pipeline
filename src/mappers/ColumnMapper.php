@@ -36,36 +36,27 @@ class ColumnMapper implements DataMapperInterface
      */
     public function map(array $rawRecord, PipelineConfig $config): array
     {
-        try {
-            $attributes = [];
-            foreach ($rawRecord  as $field => $value) {
-                /**@var ColumnMapping $column */
-                $column = $config->findColumnByName($field);
-                if (
-                    $value !== null
-                    && $column !== null
-                    && empty($column->transformers) === false
-                ) {
-                    /**@var TransformerInterface $transformerConfig */
-                    foreach($column->transformers as $transformerConfig) {
-                        $value = $this->transformerRegistry->apply(
-                            $transformerConfig->name,
-                            $value,
-                            $transformerConfig->options
-                        );
-                    }
-                   
-                }
-                if ($column !== null) {
-                    $attributes[$column->outputKey]  = $value;
-                } else {
-                    $attributes[$field]  = $value;
+        $mappedRow = [];
+
+        /** @var ColumnMapping $column */
+        foreach($config->columns as $columnMapping) {
+            $value = ($rawRecord[$columnMapping->inputKey]) ?? null;
+            if (
+                $value !== null
+                && empty($columnMapping->transformers) === false
+            ) {
+                /**@var TransformerInterface $transformerConfig */
+                foreach($columnMapping->transformers as $transformerConfig) {
+                    $value = $this->transformerRegistry->apply(
+                        $transformerConfig->name,
+                        $value,
+                        $transformerConfig->options
+                    );
                 }
             }
-            return $attributes;
-        } catch (Exception $e)  {
-            Yii::error($e->getMessage(), __METHOD__);
-            throw  $e;
+                $mappedRow[$columnMapping->outputKey]  = $value;
+
         }
+        return $mappedRow;
     }
 }

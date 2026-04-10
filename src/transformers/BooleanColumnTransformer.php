@@ -11,7 +11,6 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
-use Exception;
 
 class BooleanColumnTransformer implements TransformerInterface
 {
@@ -46,16 +45,11 @@ class BooleanColumnTransformer implements TransformerInterface
      * @param mixed $value
      * @param array $options
      * @return mixed
-     * @throws Exception
      */
     public function transform(mixed $value, array $options = []): mixed
     {
-        try {
             return filter_var($value, FILTER_VALIDATE_BOOLEAN)
-                ? $options['true']
-                : $options['false'];
-        } catch (Exception $e)  {
-            throw  $e;
-        }
+            ? $options['true']
+            : $options['false'];
     }
 }

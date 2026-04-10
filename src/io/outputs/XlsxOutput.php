@@ -14,7 +14,6 @@ use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\XlsxWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\contexts\OutputContext;
-use Exception;
 
 class XlsxOutput implements OutputInterface
 {
@@ -44,11 +43,7 @@ class XlsxOutput implements OutputInterface
      */
     public function open(): void
     {
-        try {
-            $this->writer->open();
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        $this->writer->open();
     }
 
  
@@ -62,11 +57,7 @@ class XlsxOutput implements OutputInterface
      */
     public function write(array $row, ?OutputContext $context = null): void
     {
-        try {
-            $this->writer->write($row, $context);
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        $this->writer->write($row, $context);
     }
 
     /**
@@ -76,10 +67,6 @@ class XlsxOutput implements OutputInterface
      */
     public function close(): void
     {
-        try {
-            $this->writer->close();
-        } catch (Exception $e) {
-            throw  $e;
-        }
+        $this->writer->close();
     }
 }
