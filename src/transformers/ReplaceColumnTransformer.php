@@ -11,8 +11,9 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class ReplaceColumnTransformer implements TransformerInterface
+class ReplaceColumnTransformer implements TransformerInterface, ValidateRulesInterface
 {
     /**
      * @return string
@@ -38,6 +39,19 @@ class ReplaceColumnTransformer implements TransformerInterface
         return [
             ['key' => 'search', 'type'=>'text','required'=>true,'label'=>'Rechercher'],
             ['key' => 'replace', 'type'=>'text','required'=>true,'label'=>'Remplacer'],
+        ];
+    }
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'search' => ['required' => true, 'type' => 'string'],
+            'replace' => ['required' => true, 'type' => 'string'],
         ];
     }
 

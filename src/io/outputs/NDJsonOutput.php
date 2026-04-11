@@ -14,8 +14,9 @@ use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\NDJsonWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\contexts\OutputContext;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class NDJsonOutput implements OutputInterface
+class NDJsonOutput implements OutputInterface, ValidateRulesInterface
 {
     /**
      * $writer
@@ -46,6 +47,18 @@ class NDJsonOutput implements OutputInterface
         $this->writer->open();
     }
 
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'path' => ['required' => true, 'type' => 'string'],
+        ];
+    }
+    
 
     /**
      * write

@@ -35,7 +35,7 @@ class XlsxWriter implements DataWriterInterface
      *
      * @var string
      */
-    private string $path;
+    private string|null $path;
 
     /** @var array<string, Worksheet> */
     private array $sheetsByTitle = [];
@@ -46,6 +46,7 @@ class XlsxWriter implements DataWriterInterface
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
         $this->spreadsheet = new Spreadsheet();
+        $this->path = ($this->options['path']) ?? null;
     }
 
     /**
@@ -65,7 +66,6 @@ class XlsxWriter implements DataWriterInterface
      */
     public function open(): void
     {
-        $this->path = ($this->options['path']) ?? null;
         if ($this->path === null) {
             throw new InvalidArgumentException('CsvWriter params "path" not found');
         }

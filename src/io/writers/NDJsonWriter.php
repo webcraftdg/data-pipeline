@@ -22,6 +22,7 @@ class NDJsonWriter implements DataWriterInterface
      * @var resource | false
      */
     private  $handle;
+    private string|null $path;
 
 
     /**
@@ -32,6 +33,7 @@ class NDJsonWriter implements DataWriterInterface
      */
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
+        $this->path = ($this->options['path']) ?? null;
     }
 
     /**
@@ -43,8 +45,7 @@ class NDJsonWriter implements DataWriterInterface
      */
     public function open(): void
     {
-        $path = ($this->options['path']) ?? null;
-        if ($path === null) {
+        if ($this->path === null) {
             throw new InvalidArgumentException('NDJsonWriter params "path" not found');
         }
         $conlumnsMappings = array_map(function(ColumnMapping $column) {
@@ -57,7 +58,7 @@ class NDJsonWriter implements DataWriterInterface
             'columns' => $conlumnsMappings,
             'generatedAt' => date('c'),
         ];
-        $this->handle = fopen($path, 'w');
+        $this->handle = fopen($this->path, 'w');
         fwrite($this->handle, json_encode($row).PHP_EOL);
     }
 

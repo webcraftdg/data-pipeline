@@ -11,10 +11,10 @@
 namespace webcraftdg\dataPipeline\io\inputs;
 
 use webcraftdg\dataPipeline\interfaces\InputInterface;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 use XMLReader as GlobalXMLReader;
-use Exception;
 
-class XmlInput implements InputInterface
+class XmlInput implements InputInterface, ValidateRulesInterface
 {
 
     /**
@@ -52,6 +52,19 @@ class XmlInput implements InputInterface
         $filePath = ($this->options['path']) ?? '';
         $this->xmlReader->open($filePath);
         $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
+    }
+
+        /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'path' => ['required' => true, 'type' => 'string'],
+            'batchSize' => ['required' => false, 'type' => 'integer'],
+        ];
     }
 
     /**

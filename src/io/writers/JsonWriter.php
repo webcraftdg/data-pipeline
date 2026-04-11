@@ -23,6 +23,7 @@ class JsonWriter implements DataWriterInterface
      * @var resource | false
      */
     private  $handle;
+    private string|null $path;
     private bool $firstRecord = true;
 
 
@@ -33,12 +34,12 @@ class JsonWriter implements DataWriterInterface
      */
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
+         $this->path = ($this->options['path']) ?? null;
     }
 
     public function open(): void
     {
-        $path = ($this->options['path']) ?? null;
-        if ($path === null) {
+        if ($this->path === null) {
             throw new InvalidArgumentException('JsonWriter params "path" not found');
         }
         $conlumnsMappings = array_map(function(ColumnMapping $column) {
@@ -51,7 +52,7 @@ class JsonWriter implements DataWriterInterface
             'generatedAt' => date('c'),
         ];
     
-        $this->handle = fopen($path, 'w');
+        $this->handle = fopen($this->path, 'w');
         fwrite($this->handle, '{'."\n");
         fputs($this->handle, '"metas":'.json_encode($meta).",\n");
         fputs($this->handle, '"records":['."\n");

@@ -15,10 +15,10 @@ final class ErrorCollector
     private array $errors = [];
 
     /**
-     * @param PipelineError $error
+     * @param ValidationError $error
      * @return void
      */
-    public function add(PipelineError $error): void
+    public function add(ValidationError $error): void
     {
         $this->errors[] = $error;
     }
@@ -45,9 +45,9 @@ final class ErrorCollector
     public function toCsvRows(): array
     {
         return array_map(fn($e) => [
-            'row'    => $e->rowNumber,
-            'column' => $e->column,
-            'error'  => $e->message,
+            'path'    => $e->path,
+            'message' => $e->message,
+            'level'  => $e->level,
         ], $this->errors);
     }
 }

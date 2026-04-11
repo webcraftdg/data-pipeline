@@ -11,8 +11,9 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class BooleanColumnTransformer implements TransformerInterface
+class BooleanColumnTransformer implements TransformerInterface, ValidateRulesInterface
 {
     /**
      * @return string
@@ -38,6 +39,19 @@ class BooleanColumnTransformer implements TransformerInterface
         return [
             ['key' => 'true', 'type'=>'string','required'=>true,'label'=>'Valeur si vrai'],
             ['key' => 'false', 'type'=>'string','required'=>true,'label'=>'Valeur si faux'],
+        ];
+    }
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'true' => ['required' => true, 'type' => 'string'],
+            'false' => ['required' => true, 'type' => 'string'],
         ];
     }
 

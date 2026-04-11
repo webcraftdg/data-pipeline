@@ -11,8 +11,9 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class StrPadColumnTransformer implements TransformerInterface
+class StrPadColumnTransformer implements TransformerInterface, ValidateRulesInterface
 {
     /**
      * @return string
@@ -43,6 +44,20 @@ class StrPadColumnTransformer implements TransformerInterface
                 ['value' => STR_PAD_RIGHT, 'name' => 'right'],
                 ['value' => STR_PAD_BOTH, 'name' => 'both'],
             ]],
+        ];
+    }
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'length' => ['required' => true, 'type' => 'integer'],
+            'string' => ['required' => true, 'type' => 'string'],
+            'type' => ['required' => true, 'type' => 'integer'],
         ];
     }
 

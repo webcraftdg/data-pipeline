@@ -11,8 +11,9 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class NumberColumnTransformer implements TransformerInterface
+class NumberColumnTransformer implements TransformerInterface, ValidateRulesInterface
 {
     /**
      * @return string
@@ -40,6 +41,18 @@ class NumberColumnTransformer implements TransformerInterface
         ];
     }
 
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'decimals' => ['required' => false, 'type' => 'integer'],
+        ];
+    }
     /**
      * @param mixed $value
      * @param array $options

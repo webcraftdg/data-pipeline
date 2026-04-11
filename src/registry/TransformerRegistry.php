@@ -65,6 +65,19 @@ class TransformerRegistry
         return $this->map;
     }
 
+
+    /**
+     * get transformer
+     *
+     * @param  string               $name
+     *
+     * @return TransformerInterface
+     */
+    public function getTransformer(string $name): TransformerInterface
+    {
+        return ($this->map[$name]) ?? null;
+    }
+
        /**
      * has
      *

@@ -12,8 +12,9 @@ namespace webcraftdg\dataPipeline\transformers;
 
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class DateXlsColumnTransformer implements TransformerInterface
+class DateXlsColumnTransformer implements TransformerInterface, ValidateRulesInterface
 {
     /**
      * @return string
@@ -38,6 +39,18 @@ class DateXlsColumnTransformer implements TransformerInterface
     {
         return [
             ['key' => 'to', 'type'=>'text','required'=>true,'label'=>'Format cible'],
+        ];
+    }
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'to' => ['required' => true, 'type' => 'string'],
         ];
     }
 

@@ -17,9 +17,10 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\InputSpreadsheetInterface;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 use InvalidArgumentException;
 
-class ExcelInput implements InputInterface, InputSpreadsheetInterface
+class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateRulesInterface
 {
 
 
@@ -40,6 +41,7 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
     public function __construct(private array $options = [])
     {
         $this->headers = ($options['headers']) ?? [];
+        $this->batchSize = ($options['batchSize']) ?? $this->batchSize;
         $this->delimiter = ($options['delimiter']) ?? ';';
         $this->enclosure = ($options['enclosure']) ?? '"';
         $this->inputEncoding = ($options['inputEncoding']) ?? 'ISO-8859-1';
@@ -67,6 +69,24 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface
         $this->headers = $this->getHeaders();
     }
 
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'path' => ['required' => true, 'type' => 'string'],
+            'headers' => ['required' => false, 'type' => 'array'],
+            'delimiter' => ['required' => false, 'type' => 'string'],
+            'enclosure' => ['required' => false, 'type' => 'string'],
+            'inputEncoding' => ['required' => false, 'type' => 'array'],
+            'maxColumns' => ['required' => false, 'type' => 'integer'],
+            'batchSize' => ['required' => false, 'type' => 'integer'],
+        ];
+    }
     /**
      * read
      *

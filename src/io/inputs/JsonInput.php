@@ -12,12 +12,13 @@ namespace webcraftdg\dataPipeline\io\inputs;
 
 
 use webcraftdg\dataPipeline\interfaces\InputInterface;
-use Exception;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class JsonInput implements InputInterface
+class JsonInput implements InputInterface, ValidateRulesInterface
 {
 
     private int $batchSize = 250;
+    private string $path;
     private array $records = [];
 
 
@@ -28,6 +29,8 @@ class JsonInput implements InputInterface
      */
     public function __construct(private array $options = [])
     {
+        $this->path = ($this->options['path']) ?? '';
+        $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
     }
     
     /**
@@ -37,14 +40,21 @@ class JsonInput implements InputInterface
      */
     public function open(): void
     {
-        try {
-            $filePath = ($this->options['path']) ?? '';
-            $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
-            $data = json_decode(file_get_contents($filePath), true);
-            $this->records = ($data['records']) ?? [];
-        } catch (Exception $e)  {
-            $this->records = [];
-        }
+        $data = json_decode(file_get_contents($this->path), true);
+        $this->records = ($data['records']) ?? []; $this->records = [];
+    }
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'path' => ['required' => true, 'type' => 'string'],
+            'batchSize' => ['required' => false, 'type' => 'integer'],
+        ];
     }
 
     /**

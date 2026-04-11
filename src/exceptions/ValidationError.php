@@ -10,14 +10,13 @@
  */
 namespace webcraftdg\dataPipeline\exceptions;
 
-final class PipelineError
+final class ValidationError
 {
     const LEVEL_ERROR = 'error';
     const LEVEL_VALIDATION_ERROR = 'validationError';
 
     public function __construct(
-        public readonly int $rowNumber,
-        public readonly string $column,
+        public readonly string $path,
         public readonly string $message,
         public readonly string $level = self::LEVEL_ERROR
     ) {}

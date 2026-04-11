@@ -23,6 +23,11 @@ class CsvWriter implements DataWriterInterface
      */
     private $handle;
     private $headerWritten = false;
+    private string|null $path;
+    private string $delimiter = ';';
+    private string $enclosure = '"';
+    private string $escape = '\\';
+    private string $eol = '\n';
 
 
       /**
@@ -32,6 +37,11 @@ class CsvWriter implements DataWriterInterface
      */
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
+        $this->path = ($this->options['path']) ?? null;
+        $this->delimiter = ($this->options['delimiter']) ?? $this->delimiter;
+        $this->enclosure = ($this->options['enclosure']) ?? $this->delimiter;
+        $this->escape = ($this->options['escape']) ?? $this->escape;
+        $this->eol = ($this->options['eol']) ?? $this->eol;
     }
 
     /**
@@ -41,11 +51,10 @@ class CsvWriter implements DataWriterInterface
      */
     public function open(): void
     {
-        $path = ($this->options['path']) ?? null;
-        if ($path === null) {
+        if ($this->path === null) {
             throw new InvalidArgumentException('CsvWriter params "path" not found');
         }
-        $this->handle = fopen($path, 'w');
+        $this->handle = fopen($this->path, 'w');
     }
 
     /**
@@ -59,7 +68,7 @@ class CsvWriter implements DataWriterInterface
     public function write(array $row, ?OutputContext $context = null): void
     {
         $this->addHeaders($context);
-        fputcsv($this->handle, $row, ';', '"', "\\", \PHP_EOL);
+        fputcsv($this->handle, $row, $this->delimiter, $this->enclosure, $this->escape, $this->eol);
     }
 
     /**
@@ -79,7 +88,7 @@ class CsvWriter implements DataWriterInterface
                     return $column->outputKey;
                 }, $this->config->columns);
             }
-            fputcsv($this->handle, $headers, ';', '"', "\\", \PHP_EOL);
+            fputcsv($this->handle, $headers, $this->delimiter, $this->enclosure, $this->escape, $this->eol);
             $this->headerWritten = true;
         }
     }

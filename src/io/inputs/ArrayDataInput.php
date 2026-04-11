@@ -11,9 +11,10 @@
 namespace webcraftdg\dataPipeline\io\inputs;
 
 use webcraftdg\dataPipeline\interfaces\InputCountableInterface;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 use InvalidArgumentException;
 
-class ArrayDataInput implements InputCountableInterface
+class ArrayDataInput implements InputCountableInterface, ValidateRulesInterface
 {
 
     private array $rows;
@@ -35,10 +36,22 @@ class ArrayDataInput implements InputCountableInterface
      *
      * @return void
      */
-   public function open(): void
+    public function open(): void
     {
     }
 
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'rows' => ['required' => true, 'type' => 'array'],
+            'batchSize' => ['required' => false, 'type' => 'integer'],
+        ];
+    }
     /**
      * @return iterable
      */

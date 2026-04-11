@@ -14,8 +14,9 @@ use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\JsonWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\contexts\OutputContext;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class JsonOutput implements OutputInterface
+class JsonOutput implements OutputInterface, ValidateRulesInterface
 {
     /**
      * $writer
@@ -35,6 +36,17 @@ class JsonOutput implements OutputInterface
         $this->writer = new JsonWriter($config, $options);
     }
 
+     /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'path' => ['required' => true, 'type' => 'string'],
+        ];
+    }
 
     /**
      * open

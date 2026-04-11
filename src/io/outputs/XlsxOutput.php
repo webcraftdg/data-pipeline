@@ -14,8 +14,9 @@ use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\XlsxWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\contexts\OutputContext;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class XlsxOutput implements OutputInterface
+class XlsxOutput implements OutputInterface, ValidateRulesInterface
 {
     /**
      * $writer
@@ -44,6 +45,18 @@ class XlsxOutput implements OutputInterface
     public function open(): void
     {
         $this->writer->open();
+    }
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'path' => ['required' => true, 'type' => 'string'],
+        ];
     }
 
  

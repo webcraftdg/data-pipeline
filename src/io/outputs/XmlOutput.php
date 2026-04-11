@@ -14,8 +14,9 @@ use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\XmlWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\contexts\OutputContext;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class XmlOutput implements OutputInterface
+class XmlOutput implements OutputInterface, ValidateRulesInterface
 {
     /**
      * $writer
@@ -47,6 +48,17 @@ class XmlOutput implements OutputInterface
         $this->writer->open();
     }
 
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'path' => ['required' => true, 'type' => 'string'],
+        ];
+    }
  
     /**
      * write

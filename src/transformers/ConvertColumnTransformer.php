@@ -11,8 +11,9 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class ConvertColumnTransformer implements TransformerInterface
+class ConvertColumnTransformer implements TransformerInterface, ValidateRulesInterface
 {
     /**
      * @return string
@@ -38,6 +39,19 @@ class ConvertColumnTransformer implements TransformerInterface
         return [
             ['key' => 'from', 'type'=>'text','required'=>true,'label'=>'Charset source'],
             ['key' => 'to', 'type'=>'text','required'=>true,'label'=>'Charset cible'],
+        ];
+    }
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'from' => ['required' => true, 'type' => 'string'],
+            'to' => ['required' => true, 'type' => 'string'],
         ];
     }
 

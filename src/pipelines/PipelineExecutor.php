@@ -14,10 +14,10 @@ namespace webcraftdg\dataPipeline\pipelines;
 use webcraftdg\dataPipeline\mappers\ColumnMapper;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\exceptions\ErrorCollector;
-use webcraftdg\dataPipeline\exceptions\PipelineError;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\interfaces\ProcessorInterface;
+use webcraftdg\dataPipeline\exceptions\ValidationError;
 use Exception;
 
 final class PipelineExecutor
@@ -77,9 +77,8 @@ final class PipelineExecutor
                     $report->rowsSuccess++;
                 } catch (Exception $e) {
                     $report->rowsError++;
-                    $report->errorCollector->add(new PipelineError(
-                        rowNumber: $rowNumber,
-                        column: '*',
+                    $report->errorCollector->add(new ValidationError(
+                        path: 'row:'.$rowNumber,
                         message: $e->getMessage()
                     ));
                     if ($config->stopOnError) {

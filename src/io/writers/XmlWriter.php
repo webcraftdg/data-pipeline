@@ -22,6 +22,7 @@ class XmlWriter implements DataWriterInterface
      * @var xmlWriter
      */
     private GlobalXMLWriter $xmlWriter;
+    private string|null $path;
 
 
     /**
@@ -34,6 +35,7 @@ class XmlWriter implements DataWriterInterface
     {
         $xmlWriter = new GlobalXMLWriter();
         $this->xmlWriter = $xmlWriter;
+        $this->path = ($this->options['path']) ?? null;
     }
 
      /**
@@ -45,11 +47,11 @@ class XmlWriter implements DataWriterInterface
      */
     public function open(): void
     {
-        $path = ($this->options['path']) ?? null;
-        if ($path === null) {
+        
+        if ($this->path === null) {
             throw new InvalidArgumentException('XmlWriter params "path" not found');
         }
-        $this->xmlWriter->openUri($path);
+        $this->xmlWriter->openUri($this->path);
         $this->xmlWriter->startDocument('1.0', 'UTF-8');
         $this->xmlWriter->startElement('export');
         $this->xmlWriter->writeAttribute('name', $this->config->name);

@@ -11,8 +11,9 @@
 namespace webcraftdg\dataPipeline\transformers;
 
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class TrimColumnTransformer implements TransformerInterface
+class TrimColumnTransformer implements TransformerInterface, ValidateRulesInterface
 {
     /**
      * @return string
@@ -34,6 +35,16 @@ class TrimColumnTransformer implements TransformerInterface
      * @return array[]
      */
     public function getOptionsSchema(): array
+    {
+        return [];
+    }
+
+     /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
     {
         return [];
     }

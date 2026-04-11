@@ -14,8 +14,9 @@ use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\CsvWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\contexts\OutputContext;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class CsvOutput implements OutputInterface
+class CsvOutput implements OutputInterface, ValidateRulesInterface
 {
     /**
      * $writer
@@ -42,6 +43,22 @@ class CsvOutput implements OutputInterface
         $this->writer->open();
     }
 
+     /**
+     * rules
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            'path' => ['required' => true, 'type' => 'string'],
+            'delimiter' => ['required' => false, 'type' => 'string'],
+            'enclosure' => ['required' => false, 'type' => 'string'],
+            'escape' => ['required' => false, 'type' => 'string'],
+            'eol' => ['required' => false, 'type' => 'string'],
+            'batchSize' => ['required' => false, 'type' => 'integer'],
+        ];
+    }
  
     /**
      * write
