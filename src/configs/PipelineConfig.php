@@ -10,7 +10,7 @@
  */
 namespace webcraftdg\dataPipeline\configs;
 
-use webcraftdg\dataPipeline\supports\enums\DataEndpointType;
+use webcraftdg\dataPipeline\supports\enums\PipelineConfigType;
 
 class PipelineConfig 
 {
@@ -48,7 +48,7 @@ class PipelineConfig
      */
     public function isImport() : bool
     {
-        return $this->type === DataEndpointType::IMPORT;
+        return $this->type === PipelineConfigType::IMPORT;
     }
 
     /**
@@ -58,7 +58,7 @@ class PipelineConfig
      */
     public function isExport() : bool
     {
-        return $this->type === DataEndpointType::EXPORT;
+        return $this->type === PipelineConfigType::EXPORT;
     }
 
     /**

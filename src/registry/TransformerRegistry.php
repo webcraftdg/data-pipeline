@@ -14,7 +14,7 @@ use webcraftdg\dataPipeline\interfaces\TransformerInterface;
 
 class TransformerRegistry
 {
-    /** @var TransformerInterface[] */
+    /** @var array <string, string> */
     private array $map = [];
 
     /**
@@ -22,22 +22,23 @@ class TransformerRegistry
      */
     public function __construct(array $transformers)
     {
-        foreach ($transformers as $transformer) {
-            $this->map[$transformer->getName()] = $transformer;
+        foreach ($transformers as $name => $transformerClass) {
+            $this->map[$name] = $transformerClass;
         }
     }
 
     /**
      * register
      *
-     * @param  TransformerInterface $transformer
+     * @param  string $name
+     * @param  string $transformerClass
      *
      * @return void
      */
-    public function register(TransformerInterface $transformer) : void
+    public function register(string $name, string $transformerClass) : void
     {
-        if (isset($this->map[$transformer->getName()]) === false) {
-            $this->map[$transformer->getName()] = $transformer;
+        if (isset($this->map[$name]) === false) {
+            $this->map[$name] = $transformerClass;
         }
     }
 
@@ -51,7 +52,9 @@ class TransformerRegistry
     {
         $newValue = $value;
         if (empty($name) === false && isset($this->map[$name]) === true) {
-            $newValue = $this->map[$name]->transform($value, $options);
+            $class = $this->map[$name];
+            $transformer = new $class();
+            $newValue = $transformer->transform($value, $options);
         }
         return $newValue;
     }
@@ -65,20 +68,7 @@ class TransformerRegistry
         return $this->map;
     }
 
-
     /**
-     * get transformer
-     *
-     * @param  string               $name
-     *
-     * @return TransformerInterface
-     */
-    public function getTransformer(string $name): TransformerInterface
-    {
-        return ($this->map[$name]) ?? null;
-    }
-
-       /**
      * has
      *
      * @param  string $name
@@ -88,5 +78,17 @@ class TransformerRegistry
     public function has(string $name): bool
     {
         return isset($this->map[$name]);
+    }
+
+    /**
+     * get class
+     *
+     * @param  string $name
+     *
+     * @return string | null
+     */
+    public function getClass(string $name) : string | null
+    {
+        return ($this->map[$name]) ?? null;
     }
 }

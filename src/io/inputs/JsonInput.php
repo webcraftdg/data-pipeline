@@ -41,7 +41,7 @@ class JsonInput implements InputInterface, ValidateRulesInterface
     public function open(): void
     {
         $data = json_decode(file_get_contents($this->path), true);
-        $this->records = ($data['records']) ?? []; $this->records = [];
+        $this->records = ($data['records']) ?? [];
     }
 
     /**
@@ -49,7 +49,7 @@ class JsonInput implements InputInterface, ValidateRulesInterface
      *
      * @return array
      */
-    public function rules() : array
+    public static function rules() : array
     {
         return [
             'path' => ['required' => true, 'type' => 'string'],

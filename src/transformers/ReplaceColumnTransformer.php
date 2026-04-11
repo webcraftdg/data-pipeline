@@ -47,7 +47,7 @@ class ReplaceColumnTransformer implements TransformerInterface, ValidateRulesInt
      *
      * @return array
      */
-    public function rules() : array
+    public static  function rules() : array
     {
         return [
             'search' => ['required' => true, 'type' => 'string'],

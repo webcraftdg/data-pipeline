@@ -22,6 +22,7 @@ use webcraftdg\dataPipeline\registry\OutputRegistry;
 use webcraftdg\dataPipeline\registry\ProcessorRegistry;
 use webcraftdg\dataPipeline\registry\TransformerRegistry;
 use webcraftdg\dataPipeline\supports\enums\DataEndpointType;
+use webcraftdg\dataPipeline\supports\enums\PipelineConfigType;
 use webcraftdg\dataPipeline\supports\enums\PipelineDataFormat;
 use webcraftdg\dataPipeline\transformers\BooleanColumnTransformer;
 use webcraftdg\dataPipeline\transformers\ConvertColumnTransformer;
@@ -34,6 +35,8 @@ use webcraftdg\dataPipeline\transformers\StrPadColumnTransformer;
 use webcraftdg\dataPipeline\transformers\TrimColumnTransformer;
 use webcraftdg\dataPipeline\transformers\UpperColumnTransformer;
 use webcraftdg\dataPipeline\validators\FileConfigJsonValidator;
+use webcraftdg\dataPipeline\validators\OptionsValidator;
+use webcraftdg\dataPipeline\validators\PipelineConfigValidator;
 
 class ConfigLoaderTest extends \Codeception\Test\Unit
 {
@@ -50,34 +53,34 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::IMPORT, 
+            PipelineConfigType::IMPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, ['path' => 'input.csv']),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, ['path' => 'output.csv']),
             [
-                new ColumnMapping('region', 'reg', 'string'), 
-                new ColumnMapping('département', 'country', 'string'), 
-                new ColumnMapping('code postal', 'zipcode', 'string', [
+                new ColumnMapping('region', 'reg'), 
+                new ColumnMapping('département', 'country'), 
+                new ColumnMapping('code postal', 'zipcode', [
                     new TransformerConfig(name: 'str-pad', options: [
                             'length' => 5,
                             'string' => '0',
                             'type' => STR_PAD_LEFT
                     ])
                 ]), 
-                new ColumnMapping('Nom', 'Name', 'string', 
+                new ColumnMapping('Nom', 'Name', 
                     [new TransformerConfig(name: 'upper')]
                 ), 
-                 new ColumnMapping('téléphone', 'phoneNumber', 'string', [
+                 new ColumnMapping('téléphone', 'phoneNumber', [
                     new TransformerConfig(name: 'str-pad', options: [
                             'length' => 10,
                             'string' => '0',
                             'type' => STR_PAD_LEFT
                     ])
                 ]),
-                new ColumnMapping('adresse', 'address', 'string'), 
-                new ColumnMapping('ville', 'city', 'string'),
-                new ColumnMapping('age', 'age', 'number'),
-                new ColumnMapping('date de naissance', 'birthday', 'date', 
+                new ColumnMapping('adresse', 'address'), 
+                new ColumnMapping('ville', 'city'),
+                new ColumnMapping('age', 'age'),
+                new ColumnMapping('date de naissance', 'birthday', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'd/m/Y', 'to' => 'Y-m-d'
@@ -88,7 +91,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('date d\'inscription', 'subscribe', 'date', 
+                new ColumnMapping('date d\'inscription', 'subscribe', 
                     [
                         new TransformerConfig(name: 'date', options: 
                         [
@@ -99,12 +102,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('salaire', 'salaire', 'number', [
+                new ColumnMapping('salaire', 'salaire', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
                 ]),
-                  new ColumnMapping('patrimoine', 'patrimoine', 'number', [
+                  new ColumnMapping('patrimoine', 'patrimoine', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
@@ -165,7 +168,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
@@ -174,14 +177,14 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/testFormatter.json'
                 ]),
             [
-                new ColumnMapping('id', 'Identifiant', 'string', [
+                new ColumnMapping('id', 'Identifiant', [
                         new TransformerConfig(name:'str-pad', options: [
                             'length' => 8,
                             'string' => '0',
                             'type' => STR_PAD_LEFT
                         ])
                 ]), 
-                 new ColumnMapping('adult', 'Adulte', 'int', 
+                 new ColumnMapping('adult', 'Adulte', 
                     [
                         new TransformerConfig(name: 'boolean', options: [
                             'true' => 'OUI',
@@ -189,13 +192,13 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ), 
-                new ColumnMapping('name', 'Nom', 'string', 
+                new ColumnMapping('name', 'Nom', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('email', 'Email', 'string', 
+                new ColumnMapping('email', 'Email', 
                     [
                         new TransformerConfig(name:'replace', options: [
                             'search' => 'NOT-AN-EMAIL',
@@ -204,7 +207,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         new TransformerConfig(name: 'lower')
                     ]
                 ), 
-                new ColumnMapping('birthday', 'Date anniversaire', 'date', 
+                new ColumnMapping('birthday', 'Date anniversaire', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'Y-m-d', 'to' => 'd/m/y'
@@ -223,15 +226,16 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
         $transformers = [
-            new BooleanColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -289,7 +293,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             false, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
@@ -298,14 +302,14 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/testFormatter.json'
                 ]),
             [
-                new ColumnMapping('id', 'Identifiant', 'string', [
+                new ColumnMapping('id', 'Identifiant', [
                         new TransformerConfig(name:'str-pad', options: [
                             'length' => 8,
                             'string' => '0',
                             'type' => STR_PAD_LEFT
                         ])
                 ]), 
-                 new ColumnMapping('adult', 'Adulte', 'int', 
+                 new ColumnMapping('adult', 'Adulte', 
                     [
                         new TransformerConfig(name: 'boolean', options: [
                             'true' => 'OUI',
@@ -313,14 +317,14 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ), 
-                new ColumnMapping('name', 'Nom', 'string', 
+                new ColumnMapping('name', 'Nom', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('email', 'Email', 'string'), 
-                new ColumnMapping('birthday', 'Date anniversaire', 'date', 
+                new ColumnMapping('email', 'Email'), 
+                new ColumnMapping('birthday', 'Date anniversaire', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'Y-m-d', 'to' => 'd/m/y'
@@ -340,21 +344,22 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
         $transformers = [
-            new BooleanColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
 
         $processors = [
-            new ValidateEmailProcessor()
+            'validate-email' => ValidateEmailProcessor::class
         ];
         $processor = (new ProcessorRegistry($processors))->create($config);
         $this->tester->assertInstanceOf(ProcessorInterface::class, $processor);
@@ -404,7 +409,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
@@ -413,17 +418,17 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/testPipelineToJson.json'
                 ]),
             [
-                new ColumnMapping('id', 'Identifiant', 'string'), 
-                new ColumnMapping('name', 'Nom', 'string', 
+                new ColumnMapping('id', 'Identifiant'), 
+                new ColumnMapping('name', 'Nom', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('email', 'Email', 'string', 
+                new ColumnMapping('email', 'Email', 
                     [new TransformerConfig(name: 'lower')]
                 ), 
-                new ColumnMapping('birthday', 'Date anniversaire', 'date', 
+                new ColumnMapping('birthday', 'Date anniversaire', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'Y-m-d', 'to' => 'd/m/y'
@@ -442,15 +447,16 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
         $transformers = [
-            new BooleanColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -497,7 +503,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
@@ -506,17 +512,17 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/test_ouput.xlsx'
                 ]),
             [
-                new ColumnMapping('id', 'Identifiant', 'string'), 
-                new ColumnMapping('name', 'Nom', 'string', 
+                new ColumnMapping('id', 'Identifiant'), 
+                new ColumnMapping('name', 'Nom', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('email', 'Email', 'string', 
+                new ColumnMapping('email', 'Email', 
                     [new TransformerConfig(name: 'lower')]
                 ), 
-                new ColumnMapping('birthday', 'Date anniversaire', 'date', 
+                new ColumnMapping('birthday', 'Date anniversaire', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'Y-m-d', 'to' => 'd/m/Y'
@@ -535,15 +541,16 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
         $transformers = [
-            new BooleanColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -584,7 +591,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
@@ -593,17 +600,17 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/test_ouput.xml'
                 ]),
             [
-                new ColumnMapping('id', 'Identifiant', 'string'), 
-                new ColumnMapping('name', 'Nom', 'string', 
+                new ColumnMapping('id', 'Identifiant'), 
+                new ColumnMapping('name', 'Nom', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('email', 'Email', 'string', 
+                new ColumnMapping('email', 'Email', 
                     [new TransformerConfig(name: 'lower')]
                 ), 
-                new ColumnMapping('birthday', 'Date anniversaire', 'date', 
+                new ColumnMapping('birthday', 'Date anniversaire', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'Y-m-d', 'to' => 'd/m/Y'
@@ -621,16 +628,17 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(InputInterface::class, $input);
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
-        $transformers = [
-            new BooleanColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+      $transformers = [
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -671,7 +679,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
@@ -680,17 +688,17 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/test_ouput_nd.json'
                 ]),
             [
-                new ColumnMapping('id', 'Identifiant', 'string'), 
-                new ColumnMapping('name', 'Nom', 'string', 
+                new ColumnMapping('id', 'Identifiant'), 
+                new ColumnMapping('name', 'Nom', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('email', 'Email', 'string', 
+                new ColumnMapping('email', 'Email', 
                     [new TransformerConfig(name: 'lower')]
                 ), 
-                new ColumnMapping('birthday', 'Date anniversaire', 'date', 
+                new ColumnMapping('birthday', 'Date anniversaire', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'Y-m-d', 'to' => 'd/m/Y'
@@ -709,15 +717,16 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
         $transformers = [
-            new BooleanColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -759,7 +768,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
@@ -768,17 +777,17 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/test_ouput.csv'
                 ]),
             [
-                new ColumnMapping('id', 'Identifiant', 'string'), 
-                new ColumnMapping('name', 'Nom', 'string', 
+                new ColumnMapping('id', 'Identifiant'), 
+                new ColumnMapping('name', 'Nom', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('email', 'Email', 'string', 
+                new ColumnMapping('email', 'Email', 
                     [new TransformerConfig(name: 'lower')]
                 ), 
-                new ColumnMapping('birthday', 'Date anniversaire', 'date', 
+                new ColumnMapping('birthday', 'Date anniversaire', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'Y-m-d', 'to' => 'd/m/Y'
@@ -796,16 +805,17 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(InputInterface::class, $input);
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
-        $transformers = [
-            new BooleanColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer(),
+      $transformers = [
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -826,7 +836,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::EXCEL_X, [
                     'path' => __DIR__.'/../Support/Data/test_input.xlsx'
@@ -835,21 +845,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/testPipelineFromXlsx.json'
                 ]),
             [
-                new ColumnMapping('region', 'reg', 'string'), 
-                new ColumnMapping('département', 'country', 'string'),
-                new ColumnMapping('code postal', 'zipcode', 'int'), 
-                new ColumnMapping('Nom', 'name', 'string', 
+                new ColumnMapping('region', 'reg'), 
+                new ColumnMapping('département', 'country'),
+                new ColumnMapping('code postal', 'zipcode'), 
+                new ColumnMapping('Nom', 'name', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('téléphone', 'phoneNumber', 'string'),
-                new ColumnMapping('adresse', 'adresse', 'string'),
-                new ColumnMapping('ville', 'City', 'string'), 
-                new ColumnMapping('age', 'age', 'int'), 
+                new ColumnMapping('téléphone', 'phoneNumber'),
+                new ColumnMapping('adresse', 'adresse'),
+                new ColumnMapping('ville', 'City'), 
+                new ColumnMapping('age', 'age'), 
     
-                new ColumnMapping('date de naissance', 'birthday', 'date', 
+                new ColumnMapping('date de naissance', 'birthday', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'd/m/Y', 'to' => 'Y-m-d'
@@ -860,7 +870,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('date d\'inscription', 'subscribe', 'date', 
+                new ColumnMapping('date d\'inscription', 'subscribe', 
                     [
                         new TransformerConfig(name: 'date', options: 
                         [
@@ -871,12 +881,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('salaire', 'salaire', 'number', [
+                new ColumnMapping('salaire', 'salaire', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
                 ]),
-                  new ColumnMapping('patrimoine', 'patrimoine', 'number', [
+                  new ColumnMapping('patrimoine', 'patrimoine', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
@@ -891,17 +901,17 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $output = (new OutputRegistry())->create($config);
         $this->tester->assertInstanceOf(InputInterface::class, $input);
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
-
         $transformers = [
-            new BooleanColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -922,7 +932,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, [
                     'path' => __DIR__.'/../Support/Data/test_input.csv'
@@ -931,24 +941,24 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/testPipelineFromCsv.json'
                 ]),
             [
-                new ColumnMapping('region', 'reg', 'string'), 
-                new ColumnMapping('département', 'country', 'string'),
-                new ColumnMapping('code postal', 'zipcode', 'int'), 
-                new ColumnMapping('Nom', 'name', 'string', 
+                new ColumnMapping('region', 'reg'), 
+                new ColumnMapping('département', 'country'),
+                new ColumnMapping('code postal', 'zipcode'), 
+                new ColumnMapping('Nom', 'name', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('téléphone', 'phoneNumber', 'string'),
-                new ColumnMapping('adresse', 'adresse', 'string'),
-                new ColumnMapping('ville', 'City', 'string', [
+                new ColumnMapping('téléphone', 'phoneNumber'),
+                new ColumnMapping('adresse', 'adresse'),
+                new ColumnMapping('ville', 'City', [
                     new TransformerConfig(name:'convert', options: [
                         'from' => 'UTF-8', 'to' => 'ISO-8859-1'
                     ])
                 ]), 
-                new ColumnMapping('age', 'age', 'int'), 
-                new ColumnMapping('date de naissance', 'birthday', 'date', 
+                new ColumnMapping('age', 'age'), 
+                new ColumnMapping('date de naissance', 'birthday', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'd/m/Y', 'to' => 'Y-m-d'
@@ -959,7 +969,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('date d\'inscription', 'subscribe', 'date', 
+                new ColumnMapping('date d\'inscription', 'subscribe', 
                     [
                         new TransformerConfig(name: 'date', options: 
                         [
@@ -970,12 +980,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('salaire', 'salaire', 'number', [
+                new ColumnMapping('salaire', 'salaire', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
                 ]),
-                  new ColumnMapping('patrimoine', 'patrimoine', 'number', [
+                  new ColumnMapping('patrimoine', 'patrimoine', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
@@ -992,16 +1002,16 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
         $transformers = [
-            new BooleanColumnTransformer(),
-            new ConvertColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -1022,7 +1032,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::NDJSON, [
                     'path' => __DIR__.'/../Support/Data/test_input_nd.json'
@@ -1031,21 +1041,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/testPipelineFromNdJson.json'
                 ]),
             [
-                new ColumnMapping('region', 'reg', 'string'), 
-                new ColumnMapping('département', 'country', 'string'),
-                new ColumnMapping('code postal', 'zipcode', 'int'), 
-                new ColumnMapping('Nom', 'name', 'string', 
+                new ColumnMapping('region', 'reg'), 
+                new ColumnMapping('département', 'country'),
+                new ColumnMapping('code postal', 'zipcode'), 
+                new ColumnMapping('Nom', 'name', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('téléphone', 'phoneNumber', 'string'),
-                new ColumnMapping('adresse', 'adresse', 'string'),
-                new ColumnMapping('ville', 'City', 'string'), 
-                new ColumnMapping('age', 'age', 'int'), 
+                new ColumnMapping('téléphone', 'phoneNumber'),
+                new ColumnMapping('adresse', 'adresse'),
+                new ColumnMapping('ville', 'City'), 
+                new ColumnMapping('age', 'age'), 
     
-                new ColumnMapping('date de naissance', 'birthday', 'date', 
+                new ColumnMapping('date de naissance', 'birthday', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'd/m/Y', 'to' => 'Y-m-d'
@@ -1056,7 +1066,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('date d\'inscription', 'subscribe', 'date', 
+                new ColumnMapping('date d\'inscription', 'subscribe', 
                     [
                         new TransformerConfig(name: 'date', options: 
                         [
@@ -1067,12 +1077,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('salaire', 'salaire', 'number', [
+                new ColumnMapping('salaire', 'salaire', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
                 ]),
-                  new ColumnMapping('patrimoine', 'patrimoine', 'number', [
+                  new ColumnMapping('patrimoine', 'patrimoine', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
@@ -1089,16 +1099,16 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
         $transformers = [
-            new BooleanColumnTransformer(),
-            new ConvertColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -1118,7 +1128,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
                     'path' => __DIR__.'/../Support/Data/test_input.json'
@@ -1127,21 +1137,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/testPipelineFromJson.xml'
                 ]),
             [
-                new ColumnMapping('region', 'reg', 'string'), 
-                new ColumnMapping('département', 'country', 'string'),
-                new ColumnMapping('code postal', 'zipcode', 'int'), 
-                new ColumnMapping('Nom', 'name', 'string', 
+                new ColumnMapping('region', 'reg'), 
+                new ColumnMapping('département', 'country'),
+                new ColumnMapping('code postal', 'zipcode'), 
+                new ColumnMapping('Nom', 'name', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('téléphone', 'phoneNumber', 'string'),
-                new ColumnMapping('adresse', 'adresse', 'string'),
-                new ColumnMapping('ville', 'City', 'string'), 
-                new ColumnMapping('age', 'age', 'int'), 
+                new ColumnMapping('téléphone', 'phoneNumber'),
+                new ColumnMapping('adresse', 'adresse'),
+                new ColumnMapping('ville', 'City'), 
+                new ColumnMapping('age', 'age'), 
     
-                new ColumnMapping('date de naissance', 'birthday', 'date', 
+                new ColumnMapping('date de naissance', 'birthday', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'd/m/Y', 'to' => 'Y-m-d'
@@ -1152,7 +1162,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('date d\'inscription', 'subscribe', 'date', 
+                new ColumnMapping('date d\'inscription', 'subscribe', 
                     [
                         new TransformerConfig(name: 'date', options: 
                         [
@@ -1163,12 +1173,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('salaire', 'salaire', 'number', [
+                new ColumnMapping('salaire', 'salaire', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
                 ]),
-                  new ColumnMapping('patrimoine', 'patrimoine', 'number', [
+                  new ColumnMapping('patrimoine', 'patrimoine', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
@@ -1184,17 +1194,17 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(InputInterface::class, $input);
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
-        $transformers = [
-            new BooleanColumnTransformer(),
-            new ConvertColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+         $transformers = [
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -1214,7 +1224,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            DataEndpointType::EXPORT, 
+            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::XML, [
                     'path' => __DIR__.'/../Support/Data/test_input.xml'
@@ -1223,21 +1233,20 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                     'path' => __DIR__.'/../Support/Data/testPipelineFromXML.xml'
                 ]),
             [
-                new ColumnMapping('region', 'reg', 'string'), 
-                new ColumnMapping('département', 'country', 'string'),
-                new ColumnMapping('code postal', 'zipcode', 'int'), 
-                new ColumnMapping('Nom', 'name', 'string', 
+                new ColumnMapping('region', 'reg'),
+                new ColumnMapping('département', 'country'),
+                new ColumnMapping('code postal', 'zipcode'), 
+                new ColumnMapping('Nom', 'name', 
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),
                     ]
                 ), 
-                new ColumnMapping('téléphone', 'phoneNumber', 'string'),
-                new ColumnMapping('adresse', 'adresse', 'string'),
-                new ColumnMapping('ville', 'City', 'string'), 
-                new ColumnMapping('age', 'age', 'int'), 
-    
-                new ColumnMapping('date de naissance', 'birthday', 'date', 
+                new ColumnMapping('téléphone', 'phoneNumber'),
+                new ColumnMapping('adresse', 'adresse'),
+                new ColumnMapping('ville', 'City'), 
+                new ColumnMapping('age', 'age'), 
+                new ColumnMapping('date de naissance', 'birthday', 
                     [new TransformerConfig(name: 'date', options: 
                         [
                             'from' => 'd/m/Y', 'to' => 'Y-m-d'
@@ -1248,7 +1257,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('date d\'inscription', 'subscribe', 'date', 
+                new ColumnMapping('date d\'inscription', 'subscribe', 
                     [
                         new TransformerConfig(name: 'date', options: 
                         [
@@ -1259,12 +1268,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                         ]),
                     ]
                 ),
-                new ColumnMapping('salaire', 'salaire', 'number', [
+                new ColumnMapping('salaire', 'salaire', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
                 ]),
-                  new ColumnMapping('patrimoine', 'patrimoine', 'number', [
+                new ColumnMapping('patrimoine', 'patrimoine', [
                     new TransformerConfig(name:'number', options: [
                         'decimals' => 3
                     ])
@@ -1281,16 +1290,16 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
         $transformers = [
-            new BooleanColumnTransformer(),
-            new ConvertColumnTransformer(),
-            new DateColumnTransformer(),
-            new DateXlsColumnTransformer(),
-            new LowerColumnTransformer(),
-            new NumberColumnTransformer(),
-            new ReplaceColumnTransformer(),
-            new StrPadColumnTransformer(),
-            new TrimColumnTransformer(),
-            new UpperColumnTransformer()
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
         $columnMapper = new ColumnMapper($registryTransfromer);
@@ -1302,5 +1311,381 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $file = __DIR__.'/../Support/Data/testPipelineFromXML.xml';
         $content = file_get_contents($file);
         $this->tester->assertNotEmpty($content);
+    }
+
+       public function testPipelineValidation()
+    {
+        $config = new PipelineConfig(
+            'test', 
+            1, 
+            PipelineConfigType::EXPORT, 
+            true, 
+            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+                "rows" => []
+            ]),
+            new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
+                    'path' => __DIR__.'/../Support/Data/testFormatter.json'
+                ]),
+            [
+                new ColumnMapping('id', 'Identifiant', [
+                        new TransformerConfig(name:'str-pad', options: [
+                            'length' => 8,
+                            'string' => '0',
+                            'type' => STR_PAD_LEFT
+                        ])
+                ]), 
+                 new ColumnMapping('adult', 'Adulte', 
+                    [
+                        new TransformerConfig(name: 'boolean', options: [
+                            'true' => 'OUI',
+                            'false' => 'NON'
+                        ]),
+                    ]
+                ), 
+                new ColumnMapping('name', 'Nom', 
+                    [
+                        new TransformerConfig(name: 'upper'),
+                        new TransformerConfig(name: 'trim'),
+                    ]
+                ), 
+                new ColumnMapping('email', 'Email', 
+                    [
+                        new TransformerConfig(name:'replace', options: [
+                            'search' => 'NOT-AN-EMAIL',
+                            'replace' => 'GENERIC@email.fr'
+                        ]),
+                        new TransformerConfig(name: 'lower')
+                    ]
+                ), 
+                new ColumnMapping('birthday', 'Date anniversaire', 
+                    [new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'Y-m-d', 'to' => 'd/m/y'
+                        ]
+                    )]
+                )
+            ],
+        );
+        $inputRegistry = new InputRegistry();
+        $outputRegistry = new OutputRegistry();
+        $processors = [
+            'validate-email' => ValidateEmailProcessor::class
+        ];
+        $processorRegistery = new ProcessorRegistry($processors);
+        $optionValidation = new OptionsValidator();
+        $this->tester->assertInstanceOf(ProcessorRegistry::class, $processorRegistery);
+        $this->tester->assertInstanceOf(InputRegistry::class, $inputRegistry);
+        $this->tester->assertInstanceOf(OutputRegistry::class, $outputRegistry);
+
+        $transformers = [
+            'boolean' => BooleanColumnTransformer::class,
+            'convert' => ConvertColumnTransformer::class,
+            'date' => DateColumnTransformer::class,
+            'date-xls' => DateXlsColumnTransformer::class,
+            'lower' => LowerColumnTransformer::class,
+            'number' => NumberColumnTransformer::class,
+            'replace' => ReplaceColumnTransformer::class,
+            'str-pad' => StrPadColumnTransformer::class,
+            'trim' => TrimColumnTransformer::class,
+            'upper' => UpperColumnTransformer::class
+        ];
+        $transformerRegistry = new TransformerRegistry($transformers);
+
+        $pipelineValidation = new PipelineConfigValidator(
+            inputRegistry: $inputRegistry,
+            outputRegistry: $outputRegistry,
+            transformerRegistry: $transformerRegistry,
+            processorRegistry: $processorRegistery,
+            optionsValidator: $optionValidation);
+
+        $errorCollector = $pipelineValidation->validate($config);
+
+        $this->tester->assertFalse($errorCollector->hasErrors());
+
+
+        $config = new PipelineConfig(
+            'test', 
+            1, 
+            PipelineConfigType::EXPORT, 
+            true, 
+            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            ]),
+            new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
+                    'path' => __DIR__.'/../Support/Data/testFormatter.json'
+                ]),
+            [
+                new ColumnMapping('id', 'Identifiant', [
+                        new TransformerConfig(name:'str-pad', options: [
+                            'length' => 8,
+                            'string' => '0',
+                            'type' => STR_PAD_LEFT
+                        ])
+                ]), 
+                   new ColumnMapping('adult', 'Adulte'), 
+                 new ColumnMapping('adult', 'Adulte', 
+                    [
+                        new TransformerConfig(name: 'boolean', options: [
+                            'true' => 'OUI',
+                            'false' => 'NON'
+                        ]),
+                    ]
+                ), 
+                new ColumnMapping('name', 'Nom', 
+                    [
+                        new TransformerConfig(name: 'upper'),
+                        new TransformerConfig(name: 'trimop'),
+                    ]
+                ), 
+                new ColumnMapping('email', 'Email', 
+                    [
+                        new TransformerConfig(name:'replace', options: [
+                            'replace' => 'GENERIC@email.fr'
+                        ]),
+                        new TransformerConfig(name: 'lower')
+                    ]
+                ), 
+                new ColumnMapping('birthday', 'Date anniversaire', 
+                    [new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'Y-m-d', 'to' => 'd/m/y'
+                        ]
+                    )]
+                )
+            ],
+        );
+        $errorCollector = $pipelineValidation->validate($config);
+
+        $this->tester->assertTrue($errorCollector->hasErrors());
+        $this->tester->assertEquals(4, count($errorCollector->all()));
+
+
+         $config = new PipelineConfig(
+            '', 
+            -1, 
+            '', 
+            true, 
+            new SourceConfig('', PipelineDataFormat::ARRAY, [
+            ]),
+            new TargetConfig('', PipelineDataFormat::JSON, [
+                    'path' => __DIR__.'/../Support/Data/testFormatter.json'
+                ]),
+            [
+                new ColumnMapping('', '', [
+                        new TransformerConfig(name:'str-pad', options: [
+                            'length' => 8,
+                            'string' => '0',
+                            'type' => STR_PAD_LEFT
+                        ])
+                ]), 
+                   new ColumnMapping('adult', 'Adulte'), 
+                 new ColumnMapping('adult', 'Adulte', 
+                    [
+                        new TransformerConfig(name: 'boolean', options: [
+                            'true' => 'OUI',
+                            'false' => 'NON'
+                        ]),
+                    ]
+                ), 
+                new ColumnMapping('name', 'Nom', 
+                    [
+                        new TransformerConfig(name: 'upper'),
+                        new TransformerConfig(name: 'trimop'),
+                    ]
+                ), 
+                new ColumnMapping('email', 'Email', 
+                    [
+                        new TransformerConfig(name:'replace', options: [
+                            'replace' => 'GENERIC@email.fr'
+                        ]),
+                        new TransformerConfig(name: 'lower')
+                    ]
+                ), 
+                new ColumnMapping('birthday', 'Date anniversaire', 
+                    [new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'Y-m-d', 'to' => 'd/m/y'
+                        ]
+                    )]
+                )
+            ],
+        );
+        $errorCollector = $pipelineValidation->validate($config);
+
+        $this->tester->assertTrue($errorCollector->hasErrors());
+        $this->tester->assertEquals(9, count($errorCollector->all()));
+
+
+
+          $config = new PipelineConfig(
+            'test', 
+            1, 
+            PipelineConfigType::EXPORT, 
+            true, 
+            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            ]),
+            new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
+                    'path' => __DIR__.'/../Support/Data/testFormatter.json'
+                ]),
+            [
+                new ColumnMapping('id', 'Identifiant', [
+                        new TransformerConfig(name:'str-pad', options: [
+                            'length' => 8,
+                            'string' => '0',
+                            'type' => STR_PAD_LEFT
+                        ])
+                ]), 
+                   new ColumnMapping('adult', 'Adulte'), 
+                 new ColumnMapping('adult', 'Adulte', 
+                    [
+                        new TransformerConfig(name: 'boolean', options: [
+                            'true' => 'OUI',
+                            'false' => 'NON'
+                        ]),
+                    ]
+                ), 
+                new ColumnMapping('name', 'Nom', 
+                    [
+                        new TransformerConfig(name: 'upper'),
+                        new TransformerConfig(name: 'trimop'),
+                    ]
+                ), 
+                new ColumnMapping('email', 'Email', 
+                    [
+                        new TransformerConfig(name:'replace', options: [
+                            'replace' => 'GENERIC@email.fr'
+                        ]),
+                        new TransformerConfig(name: 'lower')
+                    ]
+                ), 
+                new ColumnMapping('birthday', 'Date anniversaire', 
+                    [new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'Y-m-d', 'to' => 'd/m/y'
+                        ]
+                    )]
+                )
+            ],
+        );
+        $errorCollector = $pipelineValidation->validate($config);
+
+        $this->tester->assertTrue($errorCollector->hasErrors());
+        $this->tester->assertEquals(4, count($errorCollector->all()));
+
+
+         $config = new PipelineConfig(
+            'test', 
+            3, 
+            PipelineConfigType::EXPORT, 
+            true, 
+            new SourceConfig('', PipelineDataFormat::ARRAY, [
+                'rows' => 'truc'
+            ]),
+            new TargetConfig('', PipelineDataFormat::JSON, [
+                    'path' => __DIR__.'/../Support/Data/testFormatter.json'
+                ]),
+            [
+                new ColumnMapping('', '', [
+                        new TransformerConfig(name:'str-pad', options: [
+                            'length' => 8,
+                            'string' => '0',
+                            'type' => 'pad'
+                        ])
+                ]), 
+                   new ColumnMapping('adult', 'Adulte'), 
+                 new ColumnMapping('adult', 'Adulte', 
+                    [
+                        new TransformerConfig(name: 'boolean', options: [
+                            'true' => 15020,
+                            'false' => 'NON'
+                        ]),
+                    ]
+                ), 
+                new ColumnMapping('name', 'Nom', 
+                    [
+                        new TransformerConfig(name: 'upper'),
+                        new TransformerConfig(name: 'trimop'),
+                    ]
+                ), 
+                new ColumnMapping('email', 'Email', 
+                    [
+                        new TransformerConfig(name:'replace', options: [
+                            'replace' => 'GENERIC@email.fr'
+                        ]),
+                        new TransformerConfig(name: 'lower')
+                    ]
+                ), 
+                new ColumnMapping('birthday', 'Date anniversaire', 
+                    [new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'Y-m-d', 'to' => 'd/m/y'
+                        ]
+                    )]
+                )
+            ],
+        );
+        $errorCollector = $pipelineValidation->validate($config);
+
+        $this->tester->assertTrue($errorCollector->hasErrors());
+        $this->tester->assertEquals(8, count($errorCollector->all()));
+
+
+            $config = new PipelineConfig(
+            'test', 
+            3, 
+            PipelineConfigType::EXPORT, 
+            true, 
+            new SourceConfig('', 'machin', [
+                'rows' => []
+            ]),
+            new TargetConfig('', 'mzchin', [
+                    'path' => __DIR__.'/../Support/Data/testFormatter.json'
+                ]),
+            [
+                new ColumnMapping('', '', [
+                        new TransformerConfig(name:'str-pad', options: [
+                            'length' => 8,
+                            'string' => '0',
+                            'type' => 'pad'
+                        ])
+                ]), 
+                   new ColumnMapping('adult', 'Adulte'), 
+                 new ColumnMapping('adult', 'Adulte', 
+                    [
+                        new TransformerConfig(name: 'boolean', options: [
+                            'true' => 15020,
+                            'false' => 'NON'
+                        ]),
+                    ]
+                ), 
+                new ColumnMapping('name', 'Nom', 
+                    [
+                        new TransformerConfig(name: 'upper'),
+                        new TransformerConfig(name: 'trimop'),
+                    ]
+                ), 
+                new ColumnMapping('email', 'Email', 
+                    [
+                        new TransformerConfig(name:'replace', options: [
+                            'replace' => 'GENERIC@email.fr'
+                        ]),
+                        new TransformerConfig(name: '')
+                    ]
+                ), 
+                new ColumnMapping('birthday', 'Date anniversaire', 
+                    [new TransformerConfig(name: 'date', options: 
+                        [
+                            'from' => 'Y-m-d', 'to' => 'd/m/y'
+                        ]
+                    )]
+                )
+            ],
+            new ProcessorConfig('validate')
+        );
+        $errorCollector = $pipelineValidation->validate($config);
+
+        $this->tester->assertTrue($errorCollector->hasErrors());
+        $this->tester->assertEquals(11, count($errorCollector->all()));
+
+
     }
 }

@@ -40,7 +40,7 @@ class OutputRegistry
     public function create(PipelineConfig $config): OutputInterface
     {
         if (isset($this->map[$config->target->name]) === false) {
-            throw new RuntimeException('Unknown input "' . $config->target->name . '".');
+            throw new RuntimeException('Unknown output "' . $config->target->name . '".');
         }
         $class = $this->map[$config->target->name];
         return new $class($config, $config->target->options);
@@ -56,5 +56,17 @@ class OutputRegistry
     public function has(string $name): bool
     {
         return isset($this->map[$name]);
+    }
+
+     /**
+     * get class
+     *
+     * @param  string $name
+     *
+     * @return string | null
+     */
+    public function getClass(string $name) : string | null
+    {
+        return ($this->map[$name]) ?? null;
     }
 }

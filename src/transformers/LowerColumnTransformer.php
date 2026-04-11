@@ -45,7 +45,7 @@ class LowerColumnTransformer implements TransformerInterface, ValidateRulesInter
      *
      * @return array
      */
-    public function rules() : array
+    public static function rules() : array
     {
         return [];
     }

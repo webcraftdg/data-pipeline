@@ -45,7 +45,7 @@ class ArrayDataInput implements InputCountableInterface, ValidateRulesInterface
      *
      * @return array
      */
-    public function rules() : array
+    public static function rules() : array
     {
         return [
             'rows' => ['required' => true, 'type' => 'array'],

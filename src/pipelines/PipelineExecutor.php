@@ -65,14 +65,13 @@ final class PipelineExecutor
                     $mappedRow = $this->columnMapper->map($row, $config);
 
                     if ($processor !== null) {
-                        
                         $processorResult = $processor->process($mappedRow);
                         if ($processorResult->handled === true) {
                             $report->rowsSuccess++;
                             continue;
                         }
+                        $mappedRow = $processorResult->attributes ?? $mappedRow;
                     }
-                    $mappedRow = $result->attributes ?? $mappedRow;
                     $output->write($mappedRow);
                     $report->rowsSuccess++;
                 } catch (Exception $e) {

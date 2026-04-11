@@ -41,7 +41,7 @@ class JsonOutput implements OutputInterface, ValidateRulesInterface
      *
      * @return array
      */
-    public function rules() : array
+    public static function rules() : array
     {
         return [
             'path' => ['required' => true, 'type' => 'string'],

@@ -34,24 +34,20 @@ class JsonFileConfigReader implements ConfigLoaderInterface
     public static function load(string $filePath): PipelineConfig | null
     {
         try {
-            try {
-                $config = null;
-                $json = file_get_contents($filePath);
-                $data = json_decode($json, true);
-                $attributes = ($data['metas']) ?? [];
-                $records = ($data['records']) ?? [];
-                if (empty($records) === false) {
-                    $record = $records[0];
-                    $tmpColumns = ($record['fields']) ?? [];
-                    $config = static::prepare($attributes, $tmpColumns);
-                }
-            } catch(Exception $e) {
-                $config = null;
+            $config = null;
+            $json = file_get_contents($filePath);
+            $data = json_decode($json, true);
+            $attributes = ($data['metas']) ?? [];
+            $records = ($data['records']) ?? [];
+            if (empty($records) === false) {
+                $record = $records[0];
+                $tmpColumns = ($record['fields']) ?? [];
+                $config = static::prepare($attributes, $tmpColumns);
             }
-            return $config;
         } catch(Exception $e) {
-            throw $e;
+            $config = null;
         }
+        return $config;
     }
     /**
      * prepare
@@ -63,33 +59,25 @@ class JsonFileConfigReader implements ConfigLoaderInterface
      */
     protected static function prepare(array $attributes, array $columns): PipelineConfig
     {
-        try {
-            $processor = null;
-            $limiter = null;
-
-            if(isset($attributes['processor']) === true) {
-                $processor = new ProcessorConfig(
-                    name:$attributes['processor']['name'],
-                    options:($attributes['processor']['options']) ?? null
-                );
-            }
-
-        
-            $config = new PipelineConfig(
-                name: $attributes['name'],
-                version: $attributes['version'], 
-                type: $attributes['type'],
-                stopOnError: (isset($attributes['stopOnError']) === true) ? $attributes['stopOnError'] : false,
-                source: new SourceConfig($attributes['source']['type'], $attributes['source']['name'], $attributes['source']['options']),
-                target: new TargetConfig($attributes['target']['type'], $attributes['source']['name'], $attributes['target']['options']),
-                columns: static::prepareColumns($columns),
-                processor: $processor
-                );
-
-                return $config;
-        } catch (Exception $e) {
-            throw $e;
+        $processor = null;
+        if(isset($attributes['processor']) === true) {
+            $processor = new ProcessorConfig(
+                name:$attributes['processor']['name'],
+                options:($attributes['processor']['options']) ?? null
+            );
         }
+        $config = new PipelineConfig(
+            name: $attributes['name'],
+            version: $attributes['version'], 
+            type: $attributes['type'],
+            stopOnError: (isset($attributes['stopOnError']) === true) ? $attributes['stopOnError'] : false,
+            source: new SourceConfig($attributes['source']['type'], $attributes['source']['name'], $attributes['source']['options']),
+            target: new TargetConfig($attributes['target']['type'], $attributes['target']['name'], $attributes['target']['options']),
+            columns: static::prepareColumns($columns),
+            processor: $processor
+        );
+
+        return $config;
     }
 
 
@@ -102,26 +90,21 @@ class JsonFileConfigReader implements ConfigLoaderInterface
      */
     protected static function prepareColumns(array $columns): array
     {
-        try {
-            $columnsMappging = [];
-            foreach($columns as $column) {
-                $transformers = [];
-                if (isset($column['transformer']) === true && isset($column['transformerOptions']) === true) {
-                    $transformer = new TransformerConfig($column['transformer']['name'], $column['transformerOptions']);
-                    $transformers[] = $transformer;
-                }
-                $columnMapping = new ColumnMapping(
-                    inputKey: $column['inputKey'],
-                    outputKey: $column['outputKey'],
-                    format: $column['format'],
-                    transformers: $transformers,
-                    options: ($column['options']) ?? []
-                );
-                $columnsMappging[] = $columnMapping;
+        $columnsMappging = [];
+        foreach($columns as $column) {
+            $transformers = [];
+            if (isset($column['transformer']) === true && isset($column['transformerOptions']) === true) {
+                $transformer = new TransformerConfig($column['transformer']['name'], $column['transformerOptions']);
+                $transformers[] = $transformer;
             }
-            return $columnsMappging;
-        } catch (Exception $e) {
-            throw $e;
+            $columnMapping = new ColumnMapping(
+                inputKey: $column['inputKey'],
+                outputKey: $column['outputKey'],
+                transformers: $transformers,
+                options: ($column['options']) ?? []
+            );
+            $columnsMappging[] = $columnMapping;
         }
+        return $columnsMappging;
     }
 }

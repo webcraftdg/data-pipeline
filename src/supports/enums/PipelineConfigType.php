@@ -1,6 +1,6 @@
 <?php
 /**
- * DataEndpointType.php
+ * PipelineConfigType.php
  *
  * PHP Version 8.3+
  *
@@ -10,11 +10,8 @@
  */
 namespace webcraftdg\dataPipeline\supports\enums;
 
-enum DataEndpointType 
+enum PipelineConfigType 
 {
-    const FILE = 'file';
-    const EXTERN = 'extern';
-    const SQL = 'sql';
-    const TABLE = 'table';
-    const VIEW = 'view';
+    const EXPORT = 'export';
+    const IMPORT = 'import';
 }

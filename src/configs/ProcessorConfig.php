@@ -14,7 +14,7 @@ class ProcessorConfig
 {
     public function __construct(
         public string $name,
-        array $options = []
+        public array $options = []
     )
     { 
     }

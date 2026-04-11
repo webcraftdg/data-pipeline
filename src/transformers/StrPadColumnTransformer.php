@@ -52,7 +52,7 @@ class StrPadColumnTransformer implements TransformerInterface, ValidateRulesInte
      *
      * @return array
      */
-    public function rules() : array
+    public static function rules() : array
     {
         return [
             'length' => ['required' => true, 'type' => 'integer'],

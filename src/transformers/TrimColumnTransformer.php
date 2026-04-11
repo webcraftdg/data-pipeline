@@ -44,7 +44,7 @@ class TrimColumnTransformer implements TransformerInterface, ValidateRulesInterf
      *
      * @return array
      */
-    public function rules() : array
+    public static function rules() : array
     {
         return [];
     }

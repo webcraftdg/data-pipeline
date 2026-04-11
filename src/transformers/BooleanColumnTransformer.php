@@ -47,7 +47,7 @@ class BooleanColumnTransformer implements TransformerInterface, ValidateRulesInt
      *
      * @return array
      */
-    public function rules() : array
+    public static function rules() : array
     {
         return [
             'true' => ['required' => true, 'type' => 'string'],

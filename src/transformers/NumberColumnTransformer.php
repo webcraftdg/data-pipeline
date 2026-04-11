@@ -47,7 +47,7 @@ class NumberColumnTransformer implements TransformerInterface, ValidateRulesInte
      *
      * @return array
      */
-    public function rules() : array
+    public static function rules() : array
     {
         return [
             'decimals' => ['required' => false, 'type' => 'integer'],

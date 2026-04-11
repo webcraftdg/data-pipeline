@@ -50,8 +50,6 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateR
     /**
      * open
      *
-     * @param  array  $options
-     *
      * @return void
      */
     public function open(): void
@@ -61,8 +59,8 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateR
         if ($this->spreadsheet instanceof Spreadsheet) {
             $this->sheet = $this->spreadsheet->getActiveSheet();
         }
-        if (isset($options['maxColumns']) === true) {
-            $this->maxColumns = ($options['maxColumns']);;
+        if (isset($this->options['maxColumns']) === true) {
+            $this->maxColumns = ($this->options['maxColumns']);;
         } elseif($this->sheet instanceof Worksheet) {
             $this->maxColumns = Coordinate::columnIndexFromString($this->sheet->getHighestColumn());
         }
@@ -75,14 +73,14 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateR
      *
      * @return array
      */
-    public function rules() : array
+    public static function rules() : array
     {
         return [
             'path' => ['required' => true, 'type' => 'string'],
             'headers' => ['required' => false, 'type' => 'array'],
             'delimiter' => ['required' => false, 'type' => 'string'],
             'enclosure' => ['required' => false, 'type' => 'string'],
-            'inputEncoding' => ['required' => false, 'type' => 'array'],
+            'inputEncoding' => ['required' => false, 'type' => 'string'],
             'maxColumns' => ['required' => false, 'type' => 'integer'],
             'batchSize' => ['required' => false, 'type' => 'integer'],
         ];

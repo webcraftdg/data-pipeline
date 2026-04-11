@@ -18,7 +18,7 @@ use RuntimeException;
 
 class ProcessorRegistry
 {
-    /** @var ProcessorInterface[] */
+    /** @var array[<string, string> */
     private array $map = [];
 
 
@@ -27,8 +27,8 @@ class ProcessorRegistry
      */
     public function __construct(array $processors)
     {
-        foreach ($processors as $processor) {
-            $this->map[$processor->getName()] = $processor;
+        foreach ($processors as $name => $processorClass) {
+            $this->map[$name] = $processorClass;
         }
     }
 
@@ -69,11 +69,23 @@ class ProcessorRegistry
         $processor = null;
         if ($config->processor instanceof ProcessorConfig) {
             if (isset($this->map[$config->processor->name]) === false) {
-                throw new RuntimeException('Unknown processor "' . $config->name . '".');
+                throw new RuntimeException('Unknown processor "' . $config->processor->name . '".');
             }
             $class = $this->map[$config->processor->name];
-            $processor = new $class($config->options);
+            $processor = new $class($config->processor->options);
         }
         return $processor;
+    }
+
+     /**
+     * get class
+     *
+     * @param  string $name
+     *
+     * @return string | null
+     */
+    public function getClass(string $name) : string | null
+    {
+        return ($this->map[$name]) ?? null;
     }
 }

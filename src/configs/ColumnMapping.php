@@ -18,14 +18,12 @@ final class ColumnMapping
      *
      * @param  string $inputKey
      * @param  string $outputKey
-     * @param  string $format
      * @param  array  $transformers
      * @param  array  $options
      */
     public function __construct(
         public string $inputKey,
         public string $outputKey,
-        public string $format,
         public array  $transformers = [],
         public array $options = []
     )

@@ -46,11 +46,12 @@ class InputRegistry
         if (isset($this->map[$config->source->name]) === false) {
             throw new RuntimeException('Unknown input "' . $config->source->name . '".');
         }
-        if (isset($config->source->options['headers']) === false) {
-            $config->source->options['headers'] = HeadersBuider::fromPipeline($config);
+        $options = $config->source->options;
+        if (isset($options['headers']) === false) {
+            $options['headers'] = HeadersBuider::fromPipeline($config);
         }
         $class = $this->map[$config->source->name];
-        return new $class($config->source->options);
+        return new $class($options);
     }
 
     /**
@@ -63,5 +64,17 @@ class InputRegistry
     public function has(string $name): bool
     {
         return isset($this->map[$name]);
+    }
+
+    /**
+     * get class
+     *
+     * @param  string $name
+     *
+     * @return string | null
+     */
+    public function getClass(string $name) : string | null
+    {
+        return ($this->map[$name]) ?? null;
     }
 }
