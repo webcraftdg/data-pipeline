@@ -10,17 +10,37 @@
  */
 namespace webcraftdg\dataPipeline\registry;
 
-use webcraftdg\dataPipeline\interfaces\TransformerInterface;
+use webcraftdg\dataPipeline\transformers\BooleanColumnTransformer;
+use webcraftdg\dataPipeline\transformers\ConvertColumnTransformer;
+use webcraftdg\dataPipeline\transformers\DateColumnTransformer;
+use webcraftdg\dataPipeline\transformers\DateXlsColumnTransformer;
+use webcraftdg\dataPipeline\transformers\LowerColumnTransformer;
+use webcraftdg\dataPipeline\transformers\NumberColumnTransformer;
+use webcraftdg\dataPipeline\transformers\ReplaceColumnTransformer;
+use webcraftdg\dataPipeline\transformers\StrPadColumnTransformer;
+use webcraftdg\dataPipeline\transformers\TrimColumnTransformer;
+use webcraftdg\dataPipeline\transformers\UpperColumnTransformer;
 
 class TransformerRegistry
 {
     /** @var array <string, string> */
-    private array $map = [];
+    private array $map = [
+        'boolean' => BooleanColumnTransformer::class,
+        'convert' => ConvertColumnTransformer::class,
+        'date' => DateColumnTransformer::class,
+        'date-xls' => DateXlsColumnTransformer::class,
+        'lower' => LowerColumnTransformer::class,
+        'number' => NumberColumnTransformer::class,
+        'replace' => ReplaceColumnTransformer::class,
+        'str-pad' => StrPadColumnTransformer::class,
+        'trim' => TrimColumnTransformer::class,
+        'upper' => UpperColumnTransformer::class
+    ];
 
     /**
      * @param array $transformers
      */
-    public function __construct(array $transformers)
+    public function __construct(?array $transformers = [])
     {
         foreach ($transformers as $name => $transformerClass) {
             $this->map[$name] = $transformerClass;

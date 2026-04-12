@@ -69,14 +69,6 @@ final class PipelineConfigValidator
             );
         }
 
-        if (empty($config->type) === true) {
-            $errorCollector->add(new ValidationError(
-                path:'type', 
-                message: 'Pipeline type cannot be empty.', 
-                level:ValidationError::LEVEL_VALIDATION_ERROR) 
-            );
-        }
-
         if (empty($config->columns) === true) {
             $errorCollector->add(new ValidationError(
                 path:'columns', 

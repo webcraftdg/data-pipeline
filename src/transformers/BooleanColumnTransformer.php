@@ -32,17 +32,6 @@ class BooleanColumnTransformer implements TransformerInterface, ValidateRulesInt
     }
 
     /**
-     * @return array[]
-     */
-    public function getOptionsSchema(): array
-    {
-        return [
-            ['key' => 'true', 'type'=>'string','required'=>true,'label'=>'Valeur si vrai'],
-            ['key' => 'false', 'type'=>'string','required'=>true,'label'=>'Valeur si faux'],
-        ];
-    }
-
-    /**
      * rules
      *
      * @return array
@@ -50,8 +39,8 @@ class BooleanColumnTransformer implements TransformerInterface, ValidateRulesInt
     public static function rules() : array
     {
         return [
-            'true' => ['required' => true, 'type' => 'string'],
-            'false' => ['required' => true, 'type' => 'string'],
+            'true' => ['required' => true, 'type' => 'string','label'=>'Valeur si vrai'],
+            'false' => ['required' => true, 'type' => 'string','label'=>'Valeur si faux'],
         ];
     }
 

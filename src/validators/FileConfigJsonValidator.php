@@ -49,7 +49,7 @@ class FileConfigJsonValidator implements ValidatorInterface
                     if ($attributes === null || $records === null || $columns === null) {
                         $errorCollector->add(new ValidationError('Validate METAS, RECORDS, FIELDS', 'metas or records or fields are not valid'));
                     }
-                    $attributesRequired = ['name', 'version', 'type', 'source', 'target', 'fileFormat'];
+                    $attributesRequired = ['name', 'version', 'source', 'target'];
                     if ($attributes !== null) {
                         foreach($attributesRequired as $attributeRequired) {
                             if (in_array($attributeRequired, array_keys($attributes)) === false) {

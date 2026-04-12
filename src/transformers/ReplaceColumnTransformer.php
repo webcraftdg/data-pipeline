@@ -32,17 +32,6 @@ class ReplaceColumnTransformer implements TransformerInterface, ValidateRulesInt
     }
 
     /**
-     * @return array[]
-     */
-    public function getOptionsSchema(): array
-    {
-        return [
-            ['key' => 'search', 'type'=>'text','required'=>true,'label'=>'Rechercher'],
-            ['key' => 'replace', 'type'=>'text','required'=>true,'label'=>'Remplacer'],
-        ];
-    }
-
-    /**
      * rules
      *
      * @return array
@@ -50,8 +39,8 @@ class ReplaceColumnTransformer implements TransformerInterface, ValidateRulesInt
     public static  function rules() : array
     {
         return [
-            'search' => ['required' => true, 'type' => 'string'],
-            'replace' => ['required' => true, 'type' => 'string'],
+            'search' => ['required' => true, 'type' => 'string','label'=>'Rechercher'],
+            'replace' => ['required' => true, 'type' => 'string','label'=>'Remplacer'],
         ];
     }
 

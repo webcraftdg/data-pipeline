@@ -33,17 +33,6 @@ class DateColumnTransformer implements TransformerInterface, ValidateRulesInterf
     }
 
     /**
-     * @return array[]
-     */
-    public function getOptionsSchema(): array
-    {
-        return [
-            ['key' => 'from', 'type'=>'text','required'=>true,'label'=>'Format source'],
-            ['key' => 'to', 'type'=>'text','required'=>true,'label'=>'Format cible'],
-        ];
-    }
-
-    /**
      * rules
      *
      * @return array
@@ -51,8 +40,8 @@ class DateColumnTransformer implements TransformerInterface, ValidateRulesInterf
     public static function rules() : array
     {
         return [
-            'from' => ['required' => true, 'type' => 'string'],
-            'to' => ['required' => true, 'type' => 'string'],
+            'from' => ['required' => true, 'type' => 'string','label'=>'Format source'],
+            'to' => ['required' => true, 'type' => 'string','label'=>'Format cible'],
         ];
     }
 

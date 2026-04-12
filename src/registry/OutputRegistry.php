@@ -30,6 +30,17 @@ class OutputRegistry
         'xml' => XmlOutput::class,
     ];
 
+
+     /**
+     * @param array $outputs
+     */
+    public function __construct(?array $outputs = [])
+    {
+        foreach ($outputs as $name => $output) {
+            $this->map[$name] = $output;
+        }
+    }
+
     /**
      * create
      *

@@ -25,7 +25,7 @@ class ProcessorRegistry
     /**
      * @param array $processors
      */
-    public function __construct(array $processors)
+    public function __construct(?array $processors = [])
     {
         foreach ($processors as $name => $processorClass) {
             $this->map[$name] = $processorClass;

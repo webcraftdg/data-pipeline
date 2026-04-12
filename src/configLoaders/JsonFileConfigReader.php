@@ -69,7 +69,6 @@ class JsonFileConfigReader implements ConfigLoaderInterface
         $config = new PipelineConfig(
             name: $attributes['name'],
             version: $attributes['version'], 
-            type: $attributes['type'],
             stopOnError: (isset($attributes['stopOnError']) === true) ? $attributes['stopOnError'] : false,
             source: new SourceConfig($attributes['source']['type'], $attributes['source']['name'], $attributes['source']['options']),
             target: new TargetConfig($attributes['target']['type'], $attributes['target']['name'], $attributes['target']['options']),

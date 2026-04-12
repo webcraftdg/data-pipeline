@@ -31,16 +31,6 @@ class ConvertColumnTransformer implements TransformerInterface, ValidateRulesInt
         return 'Convertit une chaine d\'une charset à un autre';
     }
 
-    /**
-     * @return array[]
-     */
-    public function getOptionsSchema(): array
-    {
-        return [
-            ['key' => 'from', 'type'=>'text','required'=>true,'label'=>'Charset source'],
-            ['key' => 'to', 'type'=>'text','required'=>true,'label'=>'Charset cible'],
-        ];
-    }
 
     /**
      * rules
@@ -50,8 +40,8 @@ class ConvertColumnTransformer implements TransformerInterface, ValidateRulesInt
     public static function rules() : array
     {
         return [
-            'from' => ['required' => true, 'type' => 'string'],
-            'to' => ['required' => true, 'type' => 'string'],
+            'from' => ['required' => true, 'type' => 'string','label'=>'Charset source'],
+            'to' => ['required' => true, 'type' => 'string','label'=>'Charset cible'],
         ];
     }
 

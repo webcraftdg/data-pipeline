@@ -32,14 +32,6 @@ class UpperColumnTransformer implements TransformerInterface, ValidateRulesInter
     }
 
     /**
-     * @return array[]
-     */
-    public function getOptionsSchema(): array
-    {
-        return [];
-    }
-
-    /**
      * rules
      *
      * @return array

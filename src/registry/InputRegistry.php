@@ -34,6 +34,17 @@ class InputRegistry
         'array' => ArrayDataInput::class,
     ];
 
+
+      /**
+     * @param array $inputs
+     */
+    public function __construct(?array $inputs = [])
+    {
+        foreach ($inputs as $name => $input) {
+            $this->map[$name] = $input;
+        }
+    }
+
     /**
      * create
      *

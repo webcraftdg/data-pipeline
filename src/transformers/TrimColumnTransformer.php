@@ -31,14 +31,6 @@ class TrimColumnTransformer implements TransformerInterface, ValidateRulesInterf
         return 'Supprime les espaces avant/après';
     }
 
-    /**
-     * @return array[]
-     */
-    public function getOptionsSchema(): array
-    {
-        return [];
-    }
-
      /**
      * rules
      *

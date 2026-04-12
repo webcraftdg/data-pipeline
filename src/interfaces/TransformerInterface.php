@@ -24,11 +24,6 @@ interface TransformerInterface
     public function getDescription(): string;
 
     /**
-     * @return array
-     */
-    public function getOptionsSchema(): array;
-
-    /**
      * @param mixed $value
      * @param array $options
      * @return mixed

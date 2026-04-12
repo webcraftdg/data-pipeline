@@ -2,14 +2,11 @@
 "metas":{
 	"name":"import_agents_v2",
 	"version":3,
-	"type":"import",
 	"source":{"type": "file", "name":"csv", "options": {}},
 	"target":{"type": "file", "name":"csv", "options": {}},
-	"fileFormat":"xml",
 	"active":1,
 	"stopOnError":1,
 	"processor":{"name" : "agent", "options": {}}},
-	"limiter":{"name": "memory", "options": {}},
 "records":[
 	{"fields":
 		[

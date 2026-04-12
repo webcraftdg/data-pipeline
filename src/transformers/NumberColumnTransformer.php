@@ -32,17 +32,6 @@ class NumberColumnTransformer implements TransformerInterface, ValidateRulesInte
     }
 
     /**
-     * @return array[]
-     */
-    public function getOptionsSchema(): array
-    {
-        return [
-            ['key' => 'decimals', 'type'=>'number','required'=>false,'label'=>'Décimales'],
-        ];
-    }
-
-
-    /**
      * rules
      *
      * @return array
@@ -50,7 +39,7 @@ class NumberColumnTransformer implements TransformerInterface, ValidateRulesInte
     public static function rules() : array
     {
         return [
-            'decimals' => ['required' => false, 'type' => 'integer'],
+            'decimals' => ['required' => false, 'type' => 'integer','label'=>'Décimales'],
         ];
     }
     /**

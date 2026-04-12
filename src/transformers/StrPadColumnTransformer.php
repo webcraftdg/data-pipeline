@@ -32,22 +32,6 @@ class StrPadColumnTransformer implements TransformerInterface, ValidateRulesInte
     }
 
     /**
-     * @return array[]
-     */
-    public function getOptionsSchema(): array
-    {
-        return [
-            ['key' => 'length', 'type'=>'number','required'=>true,'label'=>'Longueur de la chaine'],
-            ['key' => 'string', 'type'=>'text', 'max' => 1, 'required'=>true,'label'=>'Valeur à ajouter'],
-            ['key' => 'type', 'type'=>'list', 'required'=>true, 'label'=>'Ajouter à gauche ou droite', 'options' => [
-                ['value' => STR_PAD_LEFT, 'name' => 'left'],
-                ['value' => STR_PAD_RIGHT, 'name' => 'right'],
-                ['value' => STR_PAD_BOTH, 'name' => 'both'],
-            ]],
-        ];
-    }
-
-    /**
      * rules
      *
      * @return array
@@ -55,9 +39,13 @@ class StrPadColumnTransformer implements TransformerInterface, ValidateRulesInte
     public static function rules() : array
     {
         return [
-            'length' => ['required' => true, 'type' => 'integer'],
-            'string' => ['required' => true, 'type' => 'string'],
-            'type' => ['required' => true, 'type' => 'integer'],
+            'length' => ['required' => true, 'type' => 'integer','label'=>'Longueur de la chaine'],
+            'string' => ['required' => true, 'type' => 'string','label'=>'Valeur à ajouter'],
+            'type' => ['required' => true, 'type' => 'integer', 'label'=>'Ajouter à gauche ou droite', 'options' => [
+                ['value' => STR_PAD_LEFT, 'name' => 'left'],
+                ['value' => STR_PAD_RIGHT, 'name' => 'right'],
+                ['value' => STR_PAD_BOTH, 'name' => 'both'],
+            ]],
         ];
     }
 

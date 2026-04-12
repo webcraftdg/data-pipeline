@@ -33,16 +33,6 @@ class DateXlsColumnTransformer implements TransformerInterface, ValidateRulesInt
     }
 
     /**
-     * @return array[]
-     */
-    public function getOptionsSchema(): array
-    {
-        return [
-            ['key' => 'to', 'type'=>'text','required'=>true,'label'=>'Format cible'],
-        ];
-    }
-
-    /**
      * rules
      *
      * @return array
@@ -50,7 +40,7 @@ class DateXlsColumnTransformer implements TransformerInterface, ValidateRulesInt
     public static function rules() : array
     {
         return [
-            'to' => ['required' => true, 'type' => 'string'],
+            'to' => ['required' => true, 'type' => 'string', 'label'=>'Format cible'],
         ];
     }
 

@@ -14,22 +14,17 @@ namespace webcraftdg\dataPipeline\pipelines;
 use webcraftdg\dataPipeline\mappers\ColumnMapper;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\exceptions\ErrorCollector;
-use webcraftdg\dataPipeline\interfaces\InputInterface;
-use webcraftdg\dataPipeline\interfaces\OutputInterface;
-use webcraftdg\dataPipeline\interfaces\ProcessorInterface;
 use webcraftdg\dataPipeline\exceptions\ValidationError;
 use Exception;
+use webcraftdg\dataPipeline\runtimes\PipelineRuntime;
 
 final class PipelineExecutor
 {
 
     /**
      * constructor
-     *
-     * @param  \webcraftdg\dataPipeline\mappers\ColumnMapper $columnMapper
      */
     public function __construct(
-        private ColumnMapper $columnMapper
     )
     {
     }
@@ -38,20 +33,19 @@ final class PipelineExecutor
      * run
      *
      * @param  \webcraftdg\dataPipeline\configs\PipelineConfig $config
-     * @param  InputInterface                                  $input
-     * @param  OutputInterface                                 $output
-     * @param  ProcessorInterface|null                      $processor
+     * @param  PipelineRuntime                                 $pipelineRuntime
      *
      * @return ExecutionReport
      */
     public function run(
         PipelineConfig $config,
-        InputInterface $input,
-        OutputInterface $output,
-        ?ProcessorInterface $processor = null
+        PipelineRuntime $pipelineRuntime
     ): ExecutionReport {
         $report = new ExecutionReport(new ErrorCollector());
-
+        $input = $pipelineRuntime->input;
+        $output = $pipelineRuntime->output;
+        $processor = $pipelineRuntime->processor;
+        $columnMapper = $pipelineRuntime->columnMapper;
         $input->open();
         $output->open();
 
@@ -62,7 +56,7 @@ final class PipelineExecutor
                 $rowNumber++;
                 $report->rowsTotal++;
                 try {
-                    $mappedRow = $this->columnMapper->map($row, $config);
+                    $mappedRow = $columnMapper->map($row, $config);
 
                     if ($processor !== null) {
                         $processorResult = $processor->process($mappedRow);

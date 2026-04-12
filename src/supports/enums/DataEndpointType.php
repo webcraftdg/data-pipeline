@@ -13,7 +13,7 @@ namespace webcraftdg\dataPipeline\supports\enums;
 enum DataEndpointType 
 {
     const FILE = 'file';
-    const EXTERN = 'extern';
+    const ARRAY = 'array';
     const SQL = 'sql';
     const TABLE = 'table';
     const VIEW = 'view';

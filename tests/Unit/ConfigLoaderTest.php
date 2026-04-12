@@ -11,18 +11,19 @@ use webcraftdg\dataPipeline\configs\ProcessorConfig;
 use webcraftdg\dataPipeline\configs\SourceConfig;
 use webcraftdg\dataPipeline\configs\TargetConfig;
 use webcraftdg\dataPipeline\configs\TransformerConfig;
+use webcraftdg\dataPipeline\exceptions\ProcessorResult;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\interfaces\ProcessorInterface;
-use webcraftdg\dataPipeline\mappers\ColumnMapper;
 use webcraftdg\dataPipeline\pipelines\PipelineExecutor;
 use webcraftdg\dataPipeline\processors\ValidateEmailProcessor;
 use webcraftdg\dataPipeline\registry\InputRegistry;
 use webcraftdg\dataPipeline\registry\OutputRegistry;
 use webcraftdg\dataPipeline\registry\ProcessorRegistry;
 use webcraftdg\dataPipeline\registry\TransformerRegistry;
+use webcraftdg\dataPipeline\runtimes\PipelineRuntime;
+use webcraftdg\dataPipeline\runtimes\PipelineRuntimeFactory;
 use webcraftdg\dataPipeline\supports\enums\DataEndpointType;
-use webcraftdg\dataPipeline\supports\enums\PipelineConfigType;
 use webcraftdg\dataPipeline\supports\enums\PipelineDataFormat;
 use webcraftdg\dataPipeline\transformers\BooleanColumnTransformer;
 use webcraftdg\dataPipeline\transformers\ConvertColumnTransformer;
@@ -37,6 +38,34 @@ use webcraftdg\dataPipeline\transformers\UpperColumnTransformer;
 use webcraftdg\dataPipeline\validators\FileConfigJsonValidator;
 use webcraftdg\dataPipeline\validators\OptionsValidator;
 use webcraftdg\dataPipeline\validators\PipelineConfigValidator;
+
+class UserImportProcessor implements ProcessorInterface
+{
+  
+    public function getName() : string
+    {
+        return 'user-import';
+    }
+
+    public function process(array $row, array $options = []): ProcessorResult
+    {
+        // ignorer si email vide
+        if (empty($row['email'])) {
+            return new ProcessorResult(handled: true);
+        }
+
+        $mappedRow = [
+            'id' => $row['id'],
+            'name' => $row['name'],
+            'email' => $row['email'],
+            'birthday' => $row['birthday']
+        ];
+
+        // on indique que la ligne est déjà traitée
+        return new ProcessorResult(attributes: $mappedRow, handled:false);
+    }
+}
+
 
 class ConfigLoaderTest extends \Codeception\Test\Unit
 {
@@ -53,7 +82,6 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::IMPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, ['path' => 'input.csv']),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, ['path' => 'output.csv']),
@@ -115,9 +143,6 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
             ],
         );
 
-        $this->tester->assertTrue($config->isImport());
-        $this->tester->assertFalse($config->isExport());
-
         $path = __DIR__.'/../Support/Data/import_agent_v2_test.json';
         $validator = new FileConfigJsonValidator($path);
         $errorColector = $validator->validate();
@@ -168,9 +193,8 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
-            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
@@ -216,14 +240,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 )
             ],
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(5, count($config->columns));
-
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
 
         $transformers = [
             'boolean' => BooleanColumnTransformer::class,
@@ -238,10 +255,25 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
             'upper' => UpperColumnTransformer::class
         ];
         $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
 
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output);
+
+
+        $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry(), 
+            $registryTransfromer
+        ))->create($config);
+
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
+
+
+
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertTrue($report->success);
 
         $fileJson = __DIR__.'/../Support/Data/testFormatter.json';
@@ -257,7 +289,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
     }
 
 
-       public function testProcessor()
+    public function testProcessor()
     {
         $inputRows = [
             [
@@ -293,9 +325,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
+             
             false, 
-            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
@@ -334,39 +366,29 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
             ],
             new ProcessorConfig('validate-email')
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(5, count($config->columns));
 
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
-
-        $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
+       
 
         $processors = [
             'validate-email' => ValidateEmailProcessor::class
         ];
-        $processor = (new ProcessorRegistry($processors))->create($config);
-        $this->tester->assertInstanceOf(ProcessorInterface::class, $processor);
+
+        $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry($processors), 
+            new TransformerRegistry()
+        ))->create($config);
+
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
+        $this->tester->assertInstanceOf(ProcessorInterface::class, $pipelinRuntime->processor);
 
 
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output, $processor);
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertFalse($report->success);
 
         $fileJson = __DIR__.'/../Support/Data/testFormatter.json';
@@ -409,9 +431,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
+             
             true, 
-            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
@@ -437,32 +459,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 )
             ],
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(4, count($config->columns));
 
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+        $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry(), 
+            new TransformerRegistry()
+        ))->create($config);
 
-        $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
 
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output);
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertTrue($report->success);
 
         $fileJson = __DIR__.'/../Support/Data/testPipelineToJson.json';
@@ -503,9 +514,8 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
-            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::EXCEL_X, [
@@ -531,32 +541,22 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 )
             ],
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(4, count($config->columns));
 
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+        
+        $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry(), 
+            new TransformerRegistry()
+        ))->create($config);
 
-        $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
 
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output);
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertTrue($report->success);
 
         $fileJson = __DIR__.'/../Support/Data/test_ouput.xlsx';
@@ -591,9 +591,8 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
-            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::XML, [
@@ -619,32 +618,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 )
             ],
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(4, count($config->columns));
 
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+        $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry(), 
+            new TransformerRegistry()
+        ))->create($config);
 
-      $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
 
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output);
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertTrue($report->success);
 
         $file = __DIR__.'/../Support/Data/test_ouput.xml';
@@ -679,9 +667,8 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
-            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::NDJSON, [
@@ -707,32 +694,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 )
             ],
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(4, count($config->columns));
 
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+        $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry(), 
+            new TransformerRegistry()
+        ))->create($config);
 
-        $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
 
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output);
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertTrue($report->success);
 
         $file = __DIR__.'/../Support/Data/test_ouput_nd.json';
@@ -768,9 +744,8 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
-            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, [
@@ -796,32 +771,20 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 )
             ],
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(4, count($config->columns));
 
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+        $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry(), 
+            new TransformerRegistry()
+        ))->create($config);
 
-      $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
-
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output);
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertTrue($report->success);
 
         $file = __DIR__.'/../Support/Data/test_ouput.csv';
@@ -836,7 +799,6 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::EXCEL_X, [
                     'path' => __DIR__.'/../Support/Data/test_input.xlsx'
@@ -893,31 +855,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 ]), 
             ],
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(12, count($config->columns));
 
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
-        $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
+        $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry(), 
+            new TransformerRegistry()
+        ))->create($config);
 
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output);
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
+
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertTrue($report->success);
 
         $file = __DIR__.'/../Support/Data/testPipelineFromXlsx.json';
@@ -932,7 +884,6 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, [
                     'path' => __DIR__.'/../Support/Data/test_input.csv'
@@ -992,32 +943,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 ]), 
             ],
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(12, count($config->columns));
 
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+        $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry(), 
+            new TransformerRegistry()
+        ))->create($config);
 
-        $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
 
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output);
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertTrue($report->success);
 
         $file = __DIR__.'/../Support/Data/testPipelineFromCsv.json';
@@ -1032,7 +972,6 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::NDJSON, [
                     'path' => __DIR__.'/../Support/Data/test_input_nd.json'
@@ -1089,32 +1028,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 ]), 
             ],
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(12, count($config->columns));
 
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+         $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry(), 
+            new TransformerRegistry()
+        ))->create($config);
 
-        $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
 
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output);
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertTrue($report->success);
 
         $file = __DIR__.'/../Support/Data/testPipelineFromNdJson.json';
@@ -1128,7 +1056,6 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
                     'path' => __DIR__.'/../Support/Data/test_input.json'
@@ -1185,32 +1112,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 ]), 
             ],
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(12, count($config->columns));
 
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+        $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry(), 
+            new TransformerRegistry()
+        ))->create($config);
 
-         $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
 
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output);
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertTrue($report->success);
 
         $file = __DIR__.'/../Support/Data/testPipelineFromJson.xml';
@@ -1224,7 +1140,6 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::XML, [
                     'path' => __DIR__.'/../Support/Data/test_input.xml'
@@ -1280,32 +1195,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 ]), 
             ],
         );
-        $this->tester->assertTrue($config->isExport());
-        $this->tester->assertFalse($config->isImport());
         $this->tester->assertEquals(12, count($config->columns));
 
-        $input = (new InputRegistry())->create($config);
-        $output = (new OutputRegistry())->create($config);
-        $this->tester->assertInstanceOf(InputInterface::class, $input);
-        $this->tester->assertInstanceOf(OutputInterface::class, $output);
+        $pipelinRuntime = (new PipelineRuntimeFactory(
+            new InputRegistry(), 
+            new OutputRegistry(), 
+            new ProcessorRegistry(), 
+            new TransformerRegistry()
+        ))->create($config);
 
-        $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $registryTransfromer = new TransformerRegistry($transformers);
-        $columnMapper = new ColumnMapper($registryTransfromer);
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
 
-        $executor = new PipelineExecutor($columnMapper);
-        $report = $executor->run($config, $input, $output);
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $pipelinRuntime);
         $this->tester->assertTrue($report->success);
 
         $file = __DIR__.'/../Support/Data/testPipelineFromXML.xml';
@@ -1313,14 +1217,13 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertNotEmpty($content);
     }
 
-       public function testPipelineValidation()
+    public function testPipelineValidation()
     {
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
-            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
                 "rows" => []
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
@@ -1333,7 +1236,21 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                             'string' => '0',
                             'type' => STR_PAD_LEFT
                         ])
-                ]), 
+                ]),
+                 new ColumnMapping('salaire', 'salaire', 
+                    [
+                        new TransformerConfig(name: 'number', options: [
+                            'decimals' => 3,
+                        ]),
+                    ]
+                ), 
+                new ColumnMapping('address', 'address', 
+                    [
+                        new TransformerConfig(name: 'convert', options: [
+                            'from' => 'ISO-8856-1', 'to' => 'UTF-8'
+                        ]),
+                    ]
+                ), 
                  new ColumnMapping('adult', 'Adulte', 
                     [
                         new TransformerConfig(name: 'boolean', options: [
@@ -1366,36 +1283,32 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
                 )
             ],
         );
-        $inputRegistry = new InputRegistry();
-        $outputRegistry = new OutputRegistry();
+
         $processors = [
             'validate-email' => ValidateEmailProcessor::class
         ];
-        $processorRegistery = new ProcessorRegistry($processors);
-        $optionValidation = new OptionsValidator();
-        $this->tester->assertInstanceOf(ProcessorRegistry::class, $processorRegistery);
-        $this->tester->assertInstanceOf(InputRegistry::class, $inputRegistry);
-        $this->tester->assertInstanceOf(OutputRegistry::class, $outputRegistry);
 
-        $transformers = [
-            'boolean' => BooleanColumnTransformer::class,
-            'convert' => ConvertColumnTransformer::class,
-            'date' => DateColumnTransformer::class,
-            'date-xls' => DateXlsColumnTransformer::class,
-            'lower' => LowerColumnTransformer::class,
-            'number' => NumberColumnTransformer::class,
-            'replace' => ReplaceColumnTransformer::class,
-            'str-pad' => StrPadColumnTransformer::class,
-            'trim' => TrimColumnTransformer::class,
-            'upper' => UpperColumnTransformer::class
-        ];
-        $transformerRegistry = new TransformerRegistry($transformers);
+        $pipelineFactory = new PipelineRuntimeFactory(
+            inputRegistry: new InputRegistry(), 
+            outputRegistry: new OutputRegistry(), 
+            processorRegistry: new ProcessorRegistry($processors), 
+            transformerRegistry: new TransformerRegistry()
+        );
+        $pipelinRuntime = $pipelineFactory->create($config);
+
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
+
+
+
+        $optionValidation = new OptionsValidator();
 
         $pipelineValidation = new PipelineConfigValidator(
-            inputRegistry: $inputRegistry,
-            outputRegistry: $outputRegistry,
-            transformerRegistry: $transformerRegistry,
-            processorRegistry: $processorRegistery,
+            inputRegistry: $pipelineFactory->inputRegistry,
+            outputRegistry: $pipelineFactory->outputRegistry,
+            transformerRegistry: $pipelineFactory->transformerRegistry,
+            processorRegistry: $pipelineFactory->processorRegistry,
             optionsValidator: $optionValidation);
 
         $errorCollector = $pipelineValidation->validate($config);
@@ -1406,12 +1319,11 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
-            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::NDJSON, [
             ]),
-            new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
-                    'path' => __DIR__.'/../Support/Data/testFormatter.json'
+            new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::XML, [
+                    'path' => __DIR__.'/../Support/Data/testFormatter.xml'
                 ]),
             [
                 new ColumnMapping('id', 'Identifiant', [
@@ -1462,11 +1374,10 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
          $config = new PipelineConfig(
             '', 
             -1, 
-            '', 
             true, 
-            new SourceConfig('', PipelineDataFormat::ARRAY, [
+            new SourceConfig('', PipelineDataFormat::EXCEL_X, [
             ]),
-            new TargetConfig('', PipelineDataFormat::JSON, [
+            new TargetConfig('', PipelineDataFormat::NDJSON, [
                     'path' => __DIR__.'/../Support/Data/testFormatter.json'
                 ]),
             [
@@ -1512,19 +1423,18 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $errorCollector = $pipelineValidation->validate($config);
 
         $this->tester->assertTrue($errorCollector->hasErrors());
-        $this->tester->assertEquals(9, count($errorCollector->all()));
+        $this->tester->assertEquals(8, count($errorCollector->all()));
 
 
 
           $config = new PipelineConfig(
             'test', 
             1, 
-            PipelineConfigType::EXPORT, 
             true, 
-            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
             ]),
-            new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
-                    'path' => __DIR__.'/../Support/Data/testFormatter.json'
+            new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, [
+                    'path' => __DIR__.'/../Support/Data/testFormatter.csv'
                 ]),
             [
                 new ColumnMapping('id', 'Identifiant', [
@@ -1575,13 +1485,13 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
          $config = new PipelineConfig(
             'test', 
             3, 
-            PipelineConfigType::EXPORT, 
+             
             true, 
-            new SourceConfig('', PipelineDataFormat::ARRAY, [
-                'rows' => 'truc'
+            new SourceConfig('', PipelineDataFormat::XML, [
+                'path' => 8
             ]),
-            new TargetConfig('', PipelineDataFormat::JSON, [
-                    'path' => __DIR__.'/../Support/Data/testFormatter.json'
+            new TargetConfig('', PipelineDataFormat::EXCEL_X, [
+                    'path' => __DIR__.'/../Support/Data/testFormatter.xlsx'
                 ]),
             [
                 new ColumnMapping('', '', [
@@ -1629,10 +1539,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertEquals(8, count($errorCollector->all()));
 
 
-            $config = new PipelineConfig(
+        $config = new PipelineConfig(
             'test', 
             3, 
-            PipelineConfigType::EXPORT, 
             true, 
             new SourceConfig('', 'machin', [
                 'rows' => []
@@ -1685,6 +1594,83 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
 
         $this->tester->assertTrue($errorCollector->hasErrors());
         $this->tester->assertEquals(11, count($errorCollector->all()));
+
+        $array = $errorCollector->toCsvRows();
+        $this->tester->assertEquals(11, count($array));
+
+    }
+    
+    public function testPipelineExemple()
+    {
+       $config = new PipelineConfig(
+        name: 'import-users',
+        version: 1,
+        stopOnError: true,
+
+        source: new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, [
+            'path' => __DIR__ . '/../Support/Data/users_input.csv',
+            'delimiter' => ';'
+        ]),
+
+        target: new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
+             'path' => __DIR__ . '/../Support/Data/testPipelineExemple.json',
+        ]),
+
+        columns: [
+            new ColumnMapping('id', 'id'),
+
+            new ColumnMapping('name', 'name', [
+                new TransformerConfig('upper')
+            ]),
+
+            new ColumnMapping('email', 'email'),
+
+            new ColumnMapping('birthday', 'birthday', [
+                new TransformerConfig('date', [
+                    'from' => 'Y-m-d',
+                    'to' => 'Y-m-d'
+                ])
+            ])
+        ],
+        processor: new ProcessorConfig('user-import')
+    );
+
+        $processors = [
+            'user-import' => UserImportProcessor::class
+        ];
+
+        $pipelineFactory = new PipelineRuntimeFactory(
+            inputRegistry: new InputRegistry(), 
+            outputRegistry: new OutputRegistry(), 
+            processorRegistry: new ProcessorRegistry($processors), 
+            transformerRegistry: new TransformerRegistry()
+        );
+        $optionValidation = new OptionsValidator();
+
+        $pipelineValidation = new PipelineConfigValidator(
+            inputRegistry: $pipelineFactory->inputRegistry,
+            outputRegistry: $pipelineFactory->outputRegistry,
+            transformerRegistry: $pipelineFactory->transformerRegistry,
+            processorRegistry: $pipelineFactory->processorRegistry,
+            optionsValidator: $optionValidation);
+
+        $errorCollector = $pipelineValidation->validate($config);
+        $this->tester->assertFalse($errorCollector->hasErrors());
+
+        $pipelinRuntime = $pipelineFactory->create($config);
+
+        $this->tester->assertInstanceOf(PipelineRuntime::class, $pipelinRuntime);
+        $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
+        $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
+    
+        $runtime = $pipelineFactory->create($config);
+        $executor = new PipelineExecutor();
+        $report = $executor->run($config, $runtime);
+        $this->tester->assertTrue($report->success);
+
+        $file = __DIR__.'/../Support/Data/testPipelineExemple.json';
+        $content = file_get_contents($file);
+        $this->tester->assertNotEmpty($content);
 
 
     }

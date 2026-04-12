@@ -30,16 +30,7 @@ class LowerColumnTransformer implements TransformerInterface, ValidateRulesInter
     {
         return 'Convertit en minuscules';
     }
-
-    /**
-     * @return array[]
-     */
-    public function getOptionsSchema(): array
-    {
-        return [];
-    }
-
-    
+  
     /**
      * rules
      *
