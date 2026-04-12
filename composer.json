@@ -1,0 +1,57 @@
+{
+    "name": "webcraftdg/data-pipeline",
+    "description": "Framework-agnostic PHP data pipeline engine for reading, mapping, transforming, processing and writing structured data.",
+    "type": "library",
+    "keywords": [
+        "php",
+        "data-pipeline",
+        "import",
+        "export",
+        "csv",
+        "json",
+        "xml",
+        "xlsx",
+        "etl",
+        "mapping",
+        "transformation"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/webcraftdg/data-pipeline",
+    "support": {
+        "issues": "https://github.com/webcraftdg/data-pipeline/issues",
+        "source": "https://github.com/webcraftdg/data-pipeline"
+    },
+    "authors": [
+        {
+            "name": "David Ghyse"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "phpoffice/phpspreadsheet": "^5.3"
+    },
+    "require-dev": {
+        "codeception/codeception": "^5.3",
+        "codeception/module-asserts": "*",
+        "squizlabs/php_codesniffer": "^3.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "webcraftdg\\dataPipeline\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "webcraftdg\\dataPipeline\\tests\\": "tests/"
+        }
+    },
+    "suggest": {
+        "psr/log": "Allows integration with a PSR-3 compatible logger."
+    },
+    "scripts": [],
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

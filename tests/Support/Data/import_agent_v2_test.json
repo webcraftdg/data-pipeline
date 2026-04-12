@@ -1,0 +1,125 @@
+{
+"metas":{
+	"name":"import_agents_v2",
+	"version":3,
+	"source":{"type": "file", "name":"csv", "options": {}},
+	"target":{"type": "file", "name":"csv", "options": {}},
+	"active":1,
+	"stopOnError":1,
+	"processor":{"name" : "agent", "options": {}}},
+"records":[
+	{"fields":
+		[
+		   {
+	      "inputKey": "reg",
+	      "outputKey": "region",
+	      "format": "string"
+	    },
+	    {
+	      "inputKey": "nom_uc",
+	      "outputKey": "nom_uc",
+	      "format": "string"
+	    },
+	      {
+	      "inputKey": "CODE_INSPECTEUR",
+	      "outputKey": "CODE_INSPECTEUR",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "NOM_INSPECTEUR",
+	      "outputKey": "NOM_INSPECTEUR",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "CODE_INSP_ADJOINT",
+	      "outputKey": "CODE_INSP_ADJOINT",
+	      "format": "string"
+	    },
+
+	     {
+	      "inputKey": "NOM_INSP_ADJOINT",
+	      "outputKey": "NOM_INSP_ADJOINT",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "CODE_ACC",
+	      "outputKey": "CODE_ACC",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "NOM_ACC",
+	      "outputKey": "NOM_ACC",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "code",
+	      "outputKey": "CODE_AGENT",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "civility",
+	      "outputKey": "Civilite",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "fistname",
+	      "outputKey": "NOM_PRENOM",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "lastname",
+	      "outputKey": "NOM_AGENT",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "status",
+	      "outputKey": "statut",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "dateStart",
+	      "outputKey": "Date_entree",
+	      "format": "string",
+	      "transformer":{
+	          "name":"date"
+	      },
+	      "transformerOptions":{
+	        "from":"d/m/Y",
+	        "to":"Y-m-d"
+	      }
+	    },
+	     {
+	      "inputKey": "dateEnd",
+	      "outputKey": "Date_sortie",
+	      "format": "string",
+	       "transformer":{
+	          "name":"date"
+	      },
+	      "transformerOptions":{
+	        "from":"d/m/Y",
+	        "to":"Y-m-d"
+	      }
+	    },
+	     {
+	      "inputKey": "email",
+	      "outputKey": "mail",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "login",
+	      "outputKey": "id_connexion",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "password",
+	      "outputKey": "mdp_connexion",
+	      "format": "string"
+	    },
+	     {
+	      "inputKey": "code_uc",
+	      "outputKey": "code_uc",
+	      "format": "string"
+	    }
+	]
+}
+]}
