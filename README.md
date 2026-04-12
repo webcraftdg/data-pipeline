@@ -61,6 +61,7 @@ $config = new PipelineConfig(
 $runtime = $runtimeFactory->create($config);
 $report = $executor->run($config, $runtime);
 ```
+- [Installation](./src/docs/installation.md)
 - [Pipeline](./src/docs/pipeline.md)
 - [Input](./src/docs/input.md)
 - [Processor](./src/docs/processor.md)
