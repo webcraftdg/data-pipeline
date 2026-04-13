@@ -22,7 +22,7 @@ class ArrayDataInput implements InputCountableInterface, ValidateRulesInterface
 
     public function __construct(private array $options = [])
     {
-        $this->rows = ($options['rows']) ?? null;
+        $this->rows = ($this->options['rows']) ?? null;
         if ($this->rows === null) {
             throw new InvalidArgumentException('ArrayExportData excepted params "rows"');
         }

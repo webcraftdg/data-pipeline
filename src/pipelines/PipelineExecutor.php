@@ -11,12 +11,11 @@
 
 namespace webcraftdg\dataPipeline\pipelines;
 
-use webcraftdg\dataPipeline\mappers\ColumnMapper;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\exceptions\ErrorCollector;
 use webcraftdg\dataPipeline\exceptions\ValidationError;
-use Exception;
 use webcraftdg\dataPipeline\runtimes\PipelineRuntime;
+use Exception;
 
 final class PipelineExecutor
 {
@@ -48,9 +47,7 @@ final class PipelineExecutor
         $columnMapper = $pipelineRuntime->columnMapper;
         $input->open();
         $output->open();
-
         $rowNumber = 0;
-
         foreach ($input->read() as $rows) {
             foreach($rows as $row) {
                 $rowNumber++;

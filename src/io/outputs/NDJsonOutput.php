@@ -34,7 +34,7 @@ class NDJsonOutput implements OutputInterface, ValidateRulesInterface
      */
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
-        $this->writer = new NDJsonWriter($config, $options);
+        $this->writer = new NDJsonWriter($this->config, $this->options);
     }
  
     /**

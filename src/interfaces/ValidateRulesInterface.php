@@ -14,8 +14,8 @@ interface ValidateRulesInterface
 {
 
     /**
-     * rules 
-     * 
+     * rules
+     *
      * @return array
      */
     public static function rules(): array;

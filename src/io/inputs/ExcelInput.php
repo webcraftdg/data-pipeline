@@ -60,7 +60,7 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateR
             $this->sheet = $this->spreadsheet->getActiveSheet();
         }
         if (isset($this->options['maxColumns']) === true) {
-            $this->maxColumns = ($this->options['maxColumns']);;
+            $this->maxColumns = ($this->options['maxColumns']);
         } elseif($this->sheet instanceof Worksheet) {
             $this->maxColumns = Coordinate::columnIndexFromString($this->sheet->getHighestColumn());
         }

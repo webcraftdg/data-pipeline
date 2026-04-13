@@ -33,7 +33,7 @@ class XlsxOutput implements OutputInterface, ValidateRulesInterface
      */
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
-        $this->writer = new XlsxWriter($config, $options);
+        $this->writer = new XlsxWriter($this->config, $this->options);
     }
 
 

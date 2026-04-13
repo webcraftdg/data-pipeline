@@ -10,7 +10,7 @@
  */
 namespace webcraftdg\dataPipeline\configs;
 
-abstract class DataConfig 
+abstract class DataConfig
 {
     public function __construct(
         public string $type,

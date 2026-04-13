@@ -36,7 +36,7 @@ final class OptionsValidator
             if ($hasOption === false && $required === true) {
                 $errorCollector->add(new ValidationError(
                     path: $path.' : '.$name, 
-                    message: 'This option is required', 
+                    message: 'This option is required',
                     level: ValidationError::LEVEL_VALIDATION_ERROR
                     )
                 );
@@ -45,48 +45,49 @@ final class OptionsValidator
                     case 'array':
                         if (is_array($options[$name]) === false) {
                             $errorCollector->add(new ValidationError(
-                                path: $path.' : '.$name, 
-                                message: 'This option could an array', 
+                                path: $path.' : '.$name,
+                                message: 'This option could an array',
                                 level: ValidationError::LEVEL_VALIDATION_ERROR
                                 )
                             );
-                        } 
+                        }
                         break;
                     case 'string':
                         if (is_string($options[$name]) === false) {
                             $errorCollector->add(new ValidationError(
-                                path: $path.' : '.$name, 
-                                message: 'This option could an string', 
+                                path: $path.' : '.$name,
+                                message: 'This option could an string',
                                 level: ValidationError::LEVEL_VALIDATION_ERROR
                                 )
                             );
-                        } 
-                    break;    
+                        }
+                    break;
                     case 'integer':
                     case 'int':
                         if (is_int($options[$name]) === false) {
                             $errorCollector->add(new ValidationError(
-                                path: $path.' : '.$name, 
-                                message: 'This option could an integer', 
+                                path: $path.' : '.$name,
+                                message: 'This option could an integer',
                                 level: ValidationError::LEVEL_VALIDATION_ERROR
                                 )
                             );
-                        } 
+                        }
                     break;
                     case 'boolean':
                     case 'bool':
                         if (is_bool($options[$name]) === false) {
                             $errorCollector->add(new ValidationError(
-                                path: $path.' : '.$name, 
-                                message: 'This option could an boolean', 
+                                path: $path.' : '.$name,
+                                message: 'This option could an boolean',
                                 level: ValidationError::LEVEL_VALIDATION_ERROR
                                 )
                             );
-                        } 
-                    break;   
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
         }
     }
-
 }

@@ -10,7 +10,7 @@
  */
 namespace webcraftdg\dataPipeline\supports\enums;
 
-enum PipelineMaxLimit 
+enum PipelineMaxLimit
 {
     const ROWS = 100000;
     const COLUMNS = 120;

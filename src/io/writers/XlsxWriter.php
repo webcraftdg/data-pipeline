@@ -86,7 +86,7 @@ class XlsxWriter implements DataWriterInterface
         $sheet = $this->getOrCreateSheet($sheetName);
         $this->addHeaders($sheetName, $sheet, $context);
         $rowIndex = $this->nextRow($sheetName);
-        $rowIndex = ($rowIndex <= 0 )? $context->rowOffset : $rowIndex;
+        $rowIndex = ($rowIndex <= 0 && $context !== null)? $context->rowOffset : $rowIndex;
         $colIndex = ($context !== null && empty($context->colOffset))? $context->colOffset : 1;
         $this->writeRow($row, $sheet, $sheetName, $colIndex, $rowIndex);
     }
@@ -130,7 +130,6 @@ class XlsxWriter implements DataWriterInterface
                     return $column->outputKey;
                 }, $this->config->columns);
             }
-            $rowIndex = $this->nextRow($title);
             $rowIndex = ($context !== null && empty($context->rowOffset))? $context->rowOffset : 1;
             $colIndex = ($context !== null && empty($context->colOffset))? $context->colOffset : 1;
             $this->writeRow($headers, $sheet, $title, $colIndex, $rowIndex);

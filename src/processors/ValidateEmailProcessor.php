@@ -1,5 +1,5 @@
 <?php
-/** 
+/**
  * ValidateEmailProcessor.php
  *
  * PHP Version 8.2+
@@ -41,5 +41,4 @@ final class ValidateEmailProcessor implements ProcessorInterface
         }
         return new ProcessorResult($row);
     }
-
 }
