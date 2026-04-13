@@ -10,7 +10,7 @@
  */
 namespace webcraftdg\dataPipeline\supports\enums;
 
-enum PipelineDataFormat 
+enum PipelineDataFormat
 {
     const EXCEL = 'xls';
     const EXCEL_X = 'xlsx';

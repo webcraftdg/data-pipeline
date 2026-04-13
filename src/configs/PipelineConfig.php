@@ -11,7 +11,7 @@
 namespace webcraftdg\dataPipeline\configs;
 
 
-class PipelineConfig 
+class PipelineConfig
 {
     /**
      * constructor

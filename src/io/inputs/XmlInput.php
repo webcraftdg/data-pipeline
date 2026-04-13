@@ -115,12 +115,11 @@ class XmlInput implements InputInterface, ValidateRulesInterface
             // fin du record
             $nodeType = $this->xmlReader->nodeType;
             $nodeName = $this->xmlReader->name;
-            if ($nodeType === GlobalXMLReader::END_ELEMENT 
-                && $nodeName === 'record' 
+            if ($nodeType === GlobalXMLReader::END_ELEMENT
+                && $nodeName === 'record'
                 && $this->xmlReader->depth === $depth) {
                 break;
             }
-
             if ($nodeType === GlobalXMLReader::ELEMENT && $nodeName === 'field') {
                 $name = $this->xmlReader->getAttribute('name');
                 if ($name === null || $name === '') {
@@ -156,7 +155,7 @@ class XmlInput implements InputInterface, ValidateRulesInterface
             }
         }
 
-        return $value; 
+        return $value;
     }
 
     /**

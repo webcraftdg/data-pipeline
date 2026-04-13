@@ -14,7 +14,6 @@ use webcraftdg\dataPipeline\configs\ColumnMapping;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\exceptions\ErrorCollector;
 use webcraftdg\dataPipeline\exceptions\ValidationError;
-use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 use webcraftdg\dataPipeline\registry\InputRegistry;
 use webcraftdg\dataPipeline\registry\OutputRegistry;
 use webcraftdg\dataPipeline\registry\ProcessorRegistry;
@@ -56,24 +55,24 @@ final class PipelineConfigValidator
         if (empty($config->name) === true) {
             $errorCollector->add(new ValidationError(
                 path:'name', 
-                message: 'Pipeline name cannot be empty.', 
-                level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                message: 'Pipeline name cannot be empty.',
+                level:ValidationError::LEVEL_VALIDATION_ERROR)
             );
         }
 
         if (empty($config->version) === true || $config->version < 1) {
             $errorCollector->add(new ValidationError(
                 path:'version', 
-                message: 'Pipeline version must be >= 1.', 
-                level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                message: 'Pipeline version must be >= 1.',
+                level:ValidationError::LEVEL_VALIDATION_ERROR)
             );
         }
 
         if (empty($config->columns) === true) {
             $errorCollector->add(new ValidationError(
-                path:'columns', 
-                message: 'At least one column mapping is required.', 
-                level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                path:'columns',
+                message: 'At least one column mapping is required.',
+                level:ValidationError::LEVEL_VALIDATION_ERROR)
             );
         }
 
@@ -105,26 +104,26 @@ final class PipelineConfigValidator
 
             if (empty($column->inputKey) === true) {
                 $errorCollector->add(new ValidationError(
-                    path: $columnPath . '.inputKey', 
-                    message: 'Input key cannot be empty.', 
-                    level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                    path: $columnPath . '.inputKey',
+                    message: 'Input key cannot be empty.',
+                    level:ValidationError::LEVEL_VALIDATION_ERROR)
                 );
             }
 
             if (empty($column->outputKey) === true) {
                  $errorCollector->add(new ValidationError(
-                    path: $columnPath . '.outputKey', 
-                    message: 'OutputKey key cannot be empty.', 
-                    level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                    path: $columnPath . '.outputKey',
+                    message: 'OutputKey key cannot be empty.',
+                    level:ValidationError::LEVEL_VALIDATION_ERROR)
                 );
             }
 
             if (empty($column->outputKey) === false) {
                 if (isset($outputKeys[$column->outputKey]) === true) {
                     $errorCollector->add(new ValidationError(
-                        path: $columnPath . '.outputKey', 
-                        message: sprintf('Duplicate output key "%s".', $column->outputKey), 
-                        level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                        path: $columnPath . '.outputKey',
+                        message: sprintf('Duplicate output key "%s".', $column->outputKey),
+                        level:ValidationError::LEVEL_VALIDATION_ERROR)
                     );
                 } else {
                     $outputKeys[$column->outputKey] = true;
@@ -148,23 +147,23 @@ final class PipelineConfigValidator
      */
     public function validateColumnTransformer(string $columnPath, ColumnMapping $column, ErrorCollector $errorCollector) : ErrorCollector
     {
-        foreach ($column->transformers as $j => $transformer) {
+        foreach ($column->transformers as $transformer) {
             $transformerPath = $columnPath . '.transformers[' . $transformer->name. ']';
 
             if (empty($transformer->name) === true) {
                 $errorCollector->add(new ValidationError(
                     path: $transformerPath . '.name', 
-                    message: 'Transformer name cannot be empty.', 
-                    level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                    message: 'Transformer name cannot be empty.',
+                    level:ValidationError::LEVEL_VALIDATION_ERROR)
                 );
                 continue;
             }
 
             if ($this->transformerRegistry->has($transformer->name) === false) {
                 $errorCollector->add(new ValidationError(
-                    path: $transformerPath . '.name', 
-                    message: sprintf('Unknown transformer "%s".', $transformer->name), 
-                    level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                    path: $transformerPath . '.name',
+                    message: sprintf('Unknown transformer "%s".', $transformer->name),
+                    level:ValidationError::LEVEL_VALIDATION_ERROR)
                 );
                 continue;
             }
@@ -195,15 +194,15 @@ final class PipelineConfigValidator
     {
         if (empty($config->target) === true) {
             $errorCollector->add(new ValidationError(
-                path:'target', 
-                message: 'Target name cannot be empty.', 
-                level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                path:'target',
+                message: 'Target name cannot be empty.',
+                level:ValidationError::LEVEL_VALIDATION_ERROR)
             );
         } elseif ($this->outputRegistry->has($config->target->name) === false) {
             $errorCollector->add(new ValidationError(
-                path:'target.name', 
-                message: sprintf('Unknown output "%s".', $config->target->name), 
-                level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                path:'target.name',
+                message: sprintf('Unknown output "%s".', $config->target->name),
+                level:ValidationError::LEVEL_VALIDATION_ERROR)
             );
         } else {
             $class = $this->outputRegistry->getClass($config->target->name);
@@ -232,15 +231,15 @@ final class PipelineConfigValidator
     {
         if (empty($config->source) === true) {
             $errorCollector->add(new ValidationError(
-                path:'source', 
-                message: 'Source name cannot be empty.', 
-                level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                path:'source',
+                message: 'Source name cannot be empty.',
+                level:ValidationError::LEVEL_VALIDATION_ERROR)
             );
         } elseif ($this->inputRegistry->has($config->source->name) === false) {
             $errorCollector->add(new ValidationError(
-                path:'source.name', 
-                message: sprintf('Unknown input "%s".', $config->source->name), 
-                level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                path:'source.name',
+                message: sprintf('Unknown input "%s".', $config->source->name),
+                level:ValidationError::LEVEL_VALIDATION_ERROR)
             );
         } else {
             $class = $this->inputRegistry->getClass($config->source->name);
@@ -270,15 +269,15 @@ final class PipelineConfigValidator
         if ($config->processor !== null) {
             if (empty($config->processor->name) === true) {
                 $errorCollector->add(new ValidationError(
-                    path: 'processor.name', 
-                    message: 'Processor name cannot be empty.', 
-                    level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                    path: 'processor.name',
+                    message: 'Processor name cannot be empty.',
+                    level:ValidationError::LEVEL_VALIDATION_ERROR)
                 );
             } elseif ($this->processorRegistry->has($config->processor->name) === false) {
                 $errorCollector->add(new ValidationError(
-                    path: 'processor.name', 
-                    message: sprintf('Unknown processor "%s".', $config->processor->name), 
-                    level:ValidationError::LEVEL_VALIDATION_ERROR) 
+                    path: 'processor.name',
+                    message: sprintf('Unknown processor "%s".', $config->processor->name),
+                    level:ValidationError::LEVEL_VALIDATION_ERROR)
                 );
             } else {
                 $class = $this->processorRegistry->getClass($config->processor->name);
@@ -295,5 +294,4 @@ final class PipelineConfigValidator
         }
         return $errorCollector;
     }
-
 }

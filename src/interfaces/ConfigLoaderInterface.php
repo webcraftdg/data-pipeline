@@ -12,7 +12,7 @@ namespace webcraftdg\dataPipeline\interfaces;
 
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 
-interface ConfigLoaderInterface 
+interface ConfigLoaderInterface
 {
      /**
       * load

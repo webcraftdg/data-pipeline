@@ -10,7 +10,7 @@
  */
 namespace webcraftdg\dataPipeline\supports\enums;
 
-enum DataEndpointType 
+enum DataEndpointType
 {
     const FILE = 'file';
     const ARRAY = 'array';

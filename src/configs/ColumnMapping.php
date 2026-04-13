@@ -10,7 +10,7 @@
  */
 namespace webcraftdg\dataPipeline\configs;
 
-final class ColumnMapping 
+final class ColumnMapping
 {
 
     /**
