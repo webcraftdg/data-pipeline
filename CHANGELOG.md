@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Release v1.1.0 13/04/2026 <davidg@webcraftdg.fr>
+----------------------------------------------
+
+* Ajout d'exception
+* Reformat code
+* Update tests
+
 Release v1.0.0 12/04/2026 <davidg@webcraftdg.fr>
 ----------------------------------------------
 
