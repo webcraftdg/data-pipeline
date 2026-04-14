@@ -1,5 +1,10 @@
 # webcraftdg/data-pipeline
 
+![Coverage](https://img.shields.io/badge/coverage-86.5%25-brightgreen)
+![Maintainability](https://img.shields.io/badge/maintainability-A-brightgreen)
+![Reliability](https://img.shields.io/badge/reliability-A-brightgreen)
+![Security](https://img.shields.io/badge/security-A-brightgreen)
+
 Moteur générique de transformation de données en PHP.
 
 ## OBJECTIF
@@ -68,3 +73,5 @@ $report = $executor->run($config, $runtime);
 - [transformer](./src/docs/transformer.md)
 - [Extension](./src/docs/extension.md)
 - [Exemple complet](./src/docs/example-csv-to-db.md)
+
+![Sonar Report](./src/docs/images/report.png)

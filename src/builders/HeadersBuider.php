@@ -14,7 +14,7 @@ use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\configs\ColumnMapping;
 use Exception;
 
-final class HeadersBuider 
+final class HeadersBuider
 {
 
     /**
