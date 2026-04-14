@@ -21,14 +21,6 @@ final class PipelineExecutor
 {
 
     /**
-     * constructor
-     */
-    public function __construct(
-    )
-    {
-    }
-
-    /**
      * run
      *
      * @param  \webcraftdg\dataPipeline\configs\PipelineConfig $config
@@ -41,47 +33,68 @@ final class PipelineExecutor
         PipelineRuntime $pipelineRuntime
     ): ExecutionReport {
         $report = new ExecutionReport(new ErrorCollector());
-        $input = $pipelineRuntime->input;
-        $output = $pipelineRuntime->output;
-        $processor = $pipelineRuntime->processor;
-        $columnMapper = $pipelineRuntime->columnMapper;
-        $input->open();
-        $output->open();
-        $rowNumber = 0;
-        foreach ($input->read() as $rows) {
-            foreach($rows as $row) {
-                $rowNumber++;
-                $report->rowsTotal++;
-                try {
-                    $mappedRow = $columnMapper->map($row, $config);
+        $pipelineRuntime->input->open();
+        $pipelineRuntime->output->open();
+        try {
+            $rowNumber = 0;
+            foreach ($pipelineRuntime->input->read() as $rows) {
+                foreach($rows as $row) {
+                    $rowNumber++;
+                    $report->rowsTotal++;
+                    try {
+                        $mappedRow = $pipelineRuntime->columnMapper->map($row, $config);
+                        $mappedRow = $this->applyProcessor(
+                            row: $mappedRow,
+                            pipelineRuntime: $pipelineRuntime,
+                            report: $report
+                        );
 
-                    if ($processor !== null) {
-                        $processorResult = $processor->process($mappedRow);
-                        if ($processorResult->handled === true) {
-                            $report->rowsSuccess++;
+                        if ($mappedRow === null) {
                             continue;
                         }
-                        $mappedRow = $processorResult->attributes ?? $mappedRow;
-                    }
-                    $output->write($mappedRow);
-                    $report->rowsSuccess++;
-                } catch (Exception $e) {
-                    $report->rowsError++;
-                    $report->errorCollector->add(new ValidationError(
-                        path: 'row:'.$rowNumber,
-                        message: $e->getMessage()
-                    ));
-                    if ($config->stopOnError) {
-                        break;
+                        $pipelineRuntime->output->write($mappedRow);
+                        $report->rowsSuccess++;
+                    } catch (Exception $e) {
+                        $report->rowsError++;
+                        $report->errorCollector->add(new ValidationError(
+                            path: 'row:'.$rowNumber,
+                            message: $e->getMessage()
+                        ));
+                        if ($config->stopOnError) {
+                            break 2;
+                        }
                     }
                 }
             }
+            $report->success = ($report->errorCollector->hasErrors() === false);
+        } finally {
+            $pipelineRuntime->input->close();
+            $pipelineRuntime->output->close();
         }
-        if ($report->errorCollector->hasErrors() === false) {
-            $report->success = true;
-        }
-        $input->close();
-        $output->close();
         return $report;
+    }
+
+    /**
+     * Apply processor
+     *
+     * @param  array                                             $row
+     * @param  \webcraftdg\dataPipeline\runtimes\PipelineRuntime $pipelineRuntime
+     * @param  ExecutionReport                                   $report
+     *
+     * @return array|null
+     */
+    private function applyProcessor(array $row, PipelineRuntime $pipelineRuntime, ExecutionReport $report) : ?array
+    {
+        $mappedRow = $row;
+        if ($pipelineRuntime->processor !== null) {
+            $processorResult = $pipelineRuntime->processor->process($mappedRow);
+            if ($processorResult->handled === true) {
+                $report->rowsSuccess++;
+                $mappedRow = null;
+            } else {
+                $mappedRow = $processorResult->attributes ?? $mappedRow;
+            }
+        }
+        return $mappedRow;
     }
 }

@@ -17,7 +17,7 @@ use webcraftdg\dataPipeline\io\outputs\XlsxOutput;
 use webcraftdg\dataPipeline\io\outputs\XmlOutput;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use RuntimeException;
+use webcraftdg\dataPipeline\exceptions\RegistryException;
 
 class OutputRegistry
 {
@@ -51,7 +51,7 @@ class OutputRegistry
     public function create(PipelineConfig $config): OutputInterface
     {
         if (isset($this->map[$config->target->name]) === false) {
-            throw new RuntimeException('Unknown output "' . $config->target->name . '".');
+            throw new RegistryException('Unknown output "' . $config->target->name . '".');
         }
         $class = $this->map[$config->target->name];
         return new $class($config, $config->target->options);

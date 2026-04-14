@@ -54,7 +54,7 @@ final class PipelineConfigValidator
         // PipelineConfig
         if (empty($config->name) === true) {
             $errorCollector->add(new ValidationError(
-                path:'name', 
+                path:'name',
                 message: 'Pipeline name cannot be empty.',
                 level:ValidationError::LEVEL_VALIDATION_ERROR)
             );
@@ -62,7 +62,7 @@ final class PipelineConfigValidator
 
         if (empty($config->version) === true || $config->version < 1) {
             $errorCollector->add(new ValidationError(
-                path:'version', 
+                path:'version',
                 message: 'Pipeline version must be >= 1.',
                 level:ValidationError::LEVEL_VALIDATION_ERROR)
             );
@@ -152,7 +152,7 @@ final class PipelineConfigValidator
 
             if (empty($transformer->name) === true) {
                 $errorCollector->add(new ValidationError(
-                    path: $transformerPath . '.name', 
+                    path: $transformerPath . '.name',
                     message: 'Transformer name cannot be empty.',
                     level:ValidationError::LEVEL_VALIDATION_ERROR)
                 );

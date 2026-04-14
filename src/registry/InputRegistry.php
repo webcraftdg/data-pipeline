@@ -18,7 +18,7 @@ use webcraftdg\dataPipeline\io\inputs\NDJsonInput;
 use webcraftdg\dataPipeline\io\inputs\XmlInput;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\builders\HeadersBuider;
-use RuntimeException;
+use webcraftdg\dataPipeline\exceptions\RegistryException;
 
 class InputRegistry
 {
@@ -55,7 +55,7 @@ class InputRegistry
     public function create(PipelineConfig $config): InputInterface
     {
         if (isset($this->map[$config->source->name]) === false) {
-            throw new RuntimeException('Unknown input "' . $config->source->name . '".');
+            throw new RegistryException('Unknown input "' . $config->source->name . '".');
         }
         $options = $config->source->options;
         if (isset($options['headers']) === false) {

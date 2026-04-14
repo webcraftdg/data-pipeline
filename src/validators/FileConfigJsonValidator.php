@@ -39,24 +39,7 @@ class FileConfigJsonValidator implements ValidatorInterface
             } else {
                 try {
                     $data = json_decode($json, true);
-                    $attributes = ($data['metas']) ?? null;
-                    $records = ($data['records']) ?? null;
-                    $columns = null;
-                    if (empty($records) === false) {
-                        $record = $records[0];
-                        $columns = ($record['fields']) ?? null;
-                    }
-                    if ($attributes === null || $records === null || $columns === null) {
-                        $errorCollector->add(new ValidationError('Validate METAS, RECORDS, FIELDS', 'metas or records or fields are not valid'));
-                    }
-                    $attributesRequired = ['name', 'version', 'source', 'target'];
-                    if ($attributes !== null) {
-                        foreach($attributesRequired as $attributeRequired) {
-                            if (in_array($attributeRequired, array_keys($attributes)) === false) {
-                                $errorCollector->add(new ValidationError('Metas attribute', $attributeRequired.' is required'));
-                            }
-                        }
-                    }
+                    $columns = $this->validateJsonCore($data, $errorCollector);
                     if (is_array($columns) === true) {
                         $errorCollector = $this->validateColumns($columns, $errorCollector);
                     }
@@ -68,6 +51,38 @@ class FileConfigJsonValidator implements ValidatorInterface
             $errorCollector->add(new ValidationError('FiLE', 'File is required'));
         }
         return $errorCollector;
+    }
+
+
+    /**
+     * validate json core
+     *
+     * @param  array          $data
+     * @param  ErrorCollector $errorCollector
+     *
+     * @return array|null
+     */
+    protected function validateJsonCore(array $data, ErrorCollector $errorCollector) : ?array
+    {
+        $attributes = ($data['metas']) ?? null;
+        $records = ($data['records']) ?? null;
+        $columns = null;
+        if (empty($records) === false) {
+            $record = $records[0];
+            $columns = ($record['fields']) ?? null;
+        }
+        if ($attributes === null || $records === null || $columns === null) {
+            $errorCollector->add(new ValidationError('Validate METAS, RECORDS, FIELDS', 'metas or records or fields are not valid'));
+        }
+        $attributesRequired = ['name', 'version', 'source', 'target'];
+        if ($attributes !== null) {
+            foreach($attributesRequired as $attributeRequired) {
+                if (in_array($attributeRequired, array_keys($attributes)) === false) {
+                    $errorCollector->add(new ValidationError('Metas attribute', $attributeRequired.' is required'));
+                }
+            }
+        }
+        return $columns;
     }
 
     /**

@@ -14,7 +14,7 @@ use webcraftdg\dataPipeline\interfaces\ProcessorInterface;
 
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\configs\ProcessorConfig;
-use RuntimeException;
+use webcraftdg\dataPipeline\exceptions\RegistryException;
 
 class ProcessorRegistry
 {
@@ -69,7 +69,7 @@ class ProcessorRegistry
         $processor = null;
         if ($config->processor instanceof ProcessorConfig) {
             if (isset($this->map[$config->processor->name]) === false) {
-                throw new RuntimeException('Unknown processor "' . $config->processor->name . '".');
+                throw new RegistryException('Unknown processor "' . $config->processor->name . '".');
             }
             $class = $this->map[$config->processor->name];
             $processor = new $class($config->processor->options);

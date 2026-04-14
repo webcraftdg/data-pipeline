@@ -12,7 +12,7 @@ namespace webcraftdg\dataPipeline\processors;
 
 use webcraftdg\dataPipeline\interfaces\ProcessorInterface;
 use webcraftdg\dataPipeline\exceptions\ProcessorResult;
-use RuntimeException;
+use webcraftdg\dataPipeline\exceptions\ProcessorException;
 
 final class ValidateEmailProcessor implements ProcessorInterface
 {
@@ -37,7 +37,7 @@ final class ValidateEmailProcessor implements ProcessorInterface
     public function process(array $row, array $options = []): ProcessorResult
     {
         if (empty($row['Email']) === true || filter_var($row['Email'], FILTER_VALIDATE_EMAIL) === false) {
-            throw new RuntimeException('Invalid email.');
+            throw new ProcessorException('Invalid email.');
         }
         return new ProcessorResult($row);
     }
