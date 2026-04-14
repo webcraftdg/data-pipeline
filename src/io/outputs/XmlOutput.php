@@ -34,7 +34,7 @@ class XmlOutput implements OutputInterface, ValidateRulesInterface
      */
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
-        $this->writer = new XmlWriter($config, $options);
+        $this->writer = new XmlWriter($this->config, $this->options);
     }
 
  

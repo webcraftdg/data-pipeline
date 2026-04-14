@@ -35,58 +35,120 @@ final class OptionsValidator
             $hasOption = in_array($name, array_keys($options));
             if ($hasOption === false && $required === true) {
                 $errorCollector->add(new ValidationError(
-                    path: $path.' : '.$name, 
-                    message: 'This option is required', 
+                    path: $path.' : '.$name,
+                    message: 'This option is required',
                     level: ValidationError::LEVEL_VALIDATION_ERROR
                     )
                 );
             } elseif($hasOption === true) {
                 switch($type) {
                     case 'array':
-                        if (is_array($options[$name]) === false) {
-                            $errorCollector->add(new ValidationError(
-                                path: $path.' : '.$name, 
-                                message: 'This option could an array', 
-                                level: ValidationError::LEVEL_VALIDATION_ERROR
-                                )
-                            );
-                        } 
+                        $this->validateArray($name, $options, $path, $errorCollector);
                         break;
                     case 'string':
-                        if (is_string($options[$name]) === false) {
-                            $errorCollector->add(new ValidationError(
-                                path: $path.' : '.$name, 
-                                message: 'This option could an string', 
-                                level: ValidationError::LEVEL_VALIDATION_ERROR
-                                )
-                            );
-                        } 
-                    break;    
+                        $this->validateString($name, $options, $path, $errorCollector);
+                        break;
                     case 'integer':
                     case 'int':
-                        if (is_int($options[$name]) === false) {
-                            $errorCollector->add(new ValidationError(
-                                path: $path.' : '.$name, 
-                                message: 'This option could an integer', 
-                                level: ValidationError::LEVEL_VALIDATION_ERROR
-                                )
-                            );
-                        } 
-                    break;
+                        $this->validateInteger($name, $options, $path, $errorCollector);
+                        break;
                     case 'boolean':
                     case 'bool':
-                        if (is_bool($options[$name]) === false) {
-                            $errorCollector->add(new ValidationError(
-                                path: $path.' : '.$name, 
-                                message: 'This option could an boolean', 
-                                level: ValidationError::LEVEL_VALIDATION_ERROR
-                                )
-                            );
-                        } 
-                    break;   
+                        $this->validateBoolean($name, $options, $path, $errorCollector);
+                        break;
+                    default:
+                        break;
                 }
             }
         }
     }
 
+    /**
+     * validate array
+     *
+     * @param  string                                             $name
+     * @param  array                                              $options
+     * @param  string                                             $path
+     * @param  \webcraftdg\dataPipeline\exceptions\ErrorCollector $errorCollector
+     *
+     * @return void
+     */
+    private function validateArray(string $name, array $options, string $path, ErrorCollector $errorCollector) : void
+    {
+        if (is_array($options[$name]) === false) {
+            $errorCollector->add(new ValidationError(
+                path: $path.' : '.$name,
+                message: 'This option could an array',
+                level: ValidationError::LEVEL_VALIDATION_ERROR
+                )
+            );
+        }
+    }
+
+    /**
+     * Validate string
+     *
+     * @param  string                                             $name
+     * @param  array                                              $options
+     * @param  string                                             $path
+     * @param  \webcraftdg\dataPipeline\exceptions\ErrorCollector $errorCollector
+     *
+     * @return void
+     */
+    private function validateString(string $name, array $options, string $path, ErrorCollector $errorCollector) : void
+    {
+        if (is_string($options[$name]) === false) {
+            $errorCollector->add(new ValidationError(
+                path: $path.' : '.$name,
+                message: 'This option could an string',
+                level: ValidationError::LEVEL_VALIDATION_ERROR
+                )
+            );
+        }
+    }
+
+    /**
+     * Validate integer
+     *
+     * @param  string                                             $name
+     * @param  array                                              $options
+     * @param  string                                             $path
+     * @param  \webcraftdg\dataPipeline\exceptions\ErrorCollector $errorCollector
+     *
+     * @return void
+     */
+    private function validateInteger(string $name, array $options, string $path, ErrorCollector $errorCollector) : void
+    {
+        if (is_int($options[$name]) === false) {
+            $errorCollector->add(new ValidationError(
+                path: $path.' : '.$name,
+                message: 'This option could an integer',
+                level: ValidationError::LEVEL_VALIDATION_ERROR
+                )
+            );
+        }
+    }
+
+
+    /**
+     * Validate boolean
+     *
+     * @param  string                                             $name
+     * @param  array                                              $options
+     * @param  string                                             $path
+     * @param  \webcraftdg\dataPipeline\exceptions\ErrorCollector $errorCollector
+     *
+     * @return void
+     */
+    private function validateBoolean(string $name, array $options, string $path, ErrorCollector $errorCollector) : void
+    {
+        if (is_bool($options[$name]) === false) {
+            $errorCollector->add(new ValidationError(
+                path: $path.' : '.$name,
+                message: 'This option could an boolean',
+                level: ValidationError::LEVEL_VALIDATION_ERROR
+                )
+            );
+        }
+    }
 }

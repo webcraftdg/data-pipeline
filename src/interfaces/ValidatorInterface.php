@@ -12,7 +12,7 @@ namespace webcraftdg\dataPipeline\interfaces;
 
 use webcraftdg\dataPipeline\exceptions\ErrorCollector;
 
-interface ValidatorInterface 
+interface ValidatorInterface
 {
      /**
       * load

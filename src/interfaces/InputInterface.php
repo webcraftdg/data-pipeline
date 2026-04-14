@@ -14,8 +14,8 @@ interface InputInterface
 {
 
     /**
-     * open 
-     * 
+     * open
+     *
      * @return void
      */
     public function open(): void;

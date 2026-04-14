@@ -79,70 +79,6 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
     // tests
     public function testPreparation()
     {
-        $config = new PipelineConfig(
-            'test', 
-            1, 
-            true, 
-            new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, ['path' => 'input.csv']),
-            new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, ['path' => 'output.csv']),
-            [
-                new ColumnMapping('region', 'reg'), 
-                new ColumnMapping('département', 'country'), 
-                new ColumnMapping('code postal', 'zipcode', [
-                    new TransformerConfig(name: 'str-pad', options: [
-                            'length' => 5,
-                            'string' => '0',
-                            'type' => STR_PAD_LEFT
-                    ])
-                ]), 
-                new ColumnMapping('Nom', 'Name', 
-                    [new TransformerConfig(name: 'upper')]
-                ), 
-                 new ColumnMapping('téléphone', 'phoneNumber', [
-                    new TransformerConfig(name: 'str-pad', options: [
-                            'length' => 10,
-                            'string' => '0',
-                            'type' => STR_PAD_LEFT
-                    ])
-                ]),
-                new ColumnMapping('adresse', 'address'), 
-                new ColumnMapping('ville', 'city'),
-                new ColumnMapping('age', 'age'),
-                new ColumnMapping('date de naissance', 'birthday', 
-                    [new TransformerConfig(name: 'date', options: 
-                        [
-                            'from' => 'd/m/Y', 'to' => 'Y-m-d'
-                        ]
-                    ),
-                      new TransformerConfig(name:'date-xls', options: [
-                            'to' => 'Y-m-d'
-                        ]),
-                    ]
-                ),
-                new ColumnMapping('date d\'inscription', 'subscribe', 
-                    [
-                        new TransformerConfig(name: 'date', options: 
-                        [
-                            'from' => 'd/m/Y', 'to' => 'Y-m-d'
-                        ]),
-                        new TransformerConfig(name:'date-xls', options: [
-                            'to' => 'Y-m-d'
-                        ]),
-                    ]
-                ),
-                new ColumnMapping('salaire', 'salaire', [
-                    new TransformerConfig(name:'number', options: [
-                        'decimals' => 3
-                    ])
-                ]),
-                  new ColumnMapping('patrimoine', 'patrimoine', [
-                    new TransformerConfig(name:'number', options: [
-                        'decimals' => 3
-                    ])
-                ]),
-            ],
-        );
-
         $path = __DIR__.'/../Support/Data/import_agent_v2_test.json';
         $validator = new FileConfigJsonValidator($path);
         $errorColector = $validator->validate();
@@ -191,9 +127,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         ];
 
         $config = new PipelineConfig(
-            'test', 
-            1, 
-            true, 
+            'test',
+            1,
+            true,
             new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
             ]),
@@ -323,10 +259,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         ];
 
         $config = new PipelineConfig(
-            'test', 
-            1, 
-             
-            false, 
+            'test',
+            1,
+            true,
             new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
             ]),
@@ -375,9 +310,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         ];
 
         $pipelinRuntime = (new PipelineRuntimeFactory(
-            new InputRegistry(), 
-            new OutputRegistry(), 
-            new ProcessorRegistry($processors), 
+            new InputRegistry(),
+            new OutputRegistry(),
+            new ProcessorRegistry($processors),
             new TransformerRegistry()
         ))->create($config);
 
@@ -429,12 +364,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         ];
 
         $config = new PipelineConfig(
-            'test', 
-            1, 
-             
-            true, 
+            'test',
+            1,
+            true,
             new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
-                "rows" => $inputRows
+                'rows' => $inputRows,
+                'batchSize' => 2
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
                     'path' => __DIR__.'/../Support/Data/testPipelineToJson.json'
@@ -462,9 +397,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertEquals(4, count($config->columns));
 
         $pipelinRuntime = (new PipelineRuntimeFactory(
-            new InputRegistry(), 
-            new OutputRegistry(), 
-            new ProcessorRegistry(), 
+            new InputRegistry(),
+            new OutputRegistry(),
+            new ProcessorRegistry(),
             new TransformerRegistry()
         ))->create($config);
 
@@ -512,9 +447,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         ];
 
         $config = new PipelineConfig(
-            'test', 
-            1, 
-            true, 
+            'test',
+            1,
+            true,
             new SourceConfig(DataEndpointType::ARRAY, PipelineDataFormat::ARRAY, [
                 "rows" => $inputRows
             ]),
@@ -797,11 +732,13 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
     {
   
         $config = new PipelineConfig(
-            'test', 
-            1, 
-            true, 
+            'test',
+            1,
+            true,
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::EXCEL_X, [
-                    'path' => __DIR__.'/../Support/Data/test_input.xlsx'
+                    'path' => __DIR__.'/../Support/Data/test_input.xlsx',
+                    'batchSize' => 2,
+                    'maxColumns' => 12
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::NDJSON, [
                     'path' => __DIR__.'/../Support/Data/testPipelineFromXlsx.json'
@@ -882,11 +819,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
     {
   
         $config = new PipelineConfig(
-            'test', 
-            1, 
-            true, 
+            'test',
+            1,
+            true,
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, [
-                    'path' => __DIR__.'/../Support/Data/test_input.csv'
+                    'path' => __DIR__.'/../Support/Data/test_input.csv',
+                    'batchSize' => 2
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
                     'path' => __DIR__.'/../Support/Data/testPipelineFromCsv.json'
@@ -970,11 +908,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
     {
   
         $config = new PipelineConfig(
-            'test', 
-            1, 
-            true, 
+            'test',
+            1,
+            true,
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::NDJSON, [
-                    'path' => __DIR__.'/../Support/Data/test_input_nd.json'
+                    'path' => __DIR__.'/../Support/Data/test_input_nd.json',
+                    'batchSize' => 2
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
                     'path' => __DIR__.'/../Support/Data/testPipelineFromNdJson.json'
@@ -1031,9 +970,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertEquals(12, count($config->columns));
 
          $pipelinRuntime = (new PipelineRuntimeFactory(
-            new InputRegistry(), 
-            new OutputRegistry(), 
-            new ProcessorRegistry(), 
+            new InputRegistry(),
+            new OutputRegistry(),
+            new ProcessorRegistry(),
             new TransformerRegistry()
         ))->create($config);
 
@@ -1054,11 +993,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
     {
   
         $config = new PipelineConfig(
-            'test', 
-            1, 
-            true, 
+            'test',
+            1,
+            true,
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
-                    'path' => __DIR__.'/../Support/Data/test_input.json'
+                    'path' => __DIR__.'/../Support/Data/test_input.json',
+                    'batchSize' => 2
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::XML, [
                     'path' => __DIR__.'/../Support/Data/testPipelineFromJson.xml'
@@ -1138,11 +1078,12 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
     {
   
         $config = new PipelineConfig(
-            'test', 
-            1, 
-            true, 
+            'test',
+            1,
+            true,
             new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::XML, [
-                    'path' => __DIR__.'/../Support/Data/test_input.xml'
+                    'path' => __DIR__.'/../Support/Data/test_input.xml',
+                    'batchSize' => 2
             ]),
             new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::XML, [
                     'path' => __DIR__.'/../Support/Data/testPipelineFromXML.xml'
@@ -1150,8 +1091,8 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
             [
                 new ColumnMapping('region', 'reg'),
                 new ColumnMapping('département', 'country'),
-                new ColumnMapping('code postal', 'zipcode'), 
-                new ColumnMapping('Nom', 'name', 
+                new ColumnMapping('code postal', 'zipcode'),
+                new ColumnMapping('Nom', 'name',
                     [
                         new TransformerConfig(name: 'upper'),
                         new TransformerConfig(name: 'trim'),

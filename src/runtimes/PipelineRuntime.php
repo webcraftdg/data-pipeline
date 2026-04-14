@@ -15,7 +15,7 @@ use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\interfaces\ProcessorInterface;
 use webcraftdg\dataPipeline\mappers\ColumnMapper;
 
-final class PipelineRuntime 
+final class PipelineRuntime
 {
 
 

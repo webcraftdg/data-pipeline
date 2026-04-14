@@ -10,12 +10,12 @@
  */
 namespace webcraftdg\dataPipeline\configs;
 
-class ProcessorConfig 
+class ProcessorConfig
 {
     public function __construct(
         public string $name,
         public array $options = []
     )
-    { 
+    {
     }
 }

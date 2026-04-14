@@ -17,7 +17,7 @@ use webcraftdg\dataPipeline\interfaces\DataMapperInterface;
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
 use webcraftdg\dataPipeline\registry\TransformerRegistry;
 
-class ColumnMapper implements DataMapperInterface 
+class ColumnMapper implements DataMapperInterface
 {
 
 

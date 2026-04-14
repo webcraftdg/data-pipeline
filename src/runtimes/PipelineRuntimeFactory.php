@@ -17,7 +17,7 @@ use webcraftdg\dataPipeline\registry\OutputRegistry;
 use webcraftdg\dataPipeline\registry\ProcessorRegistry;
 use webcraftdg\dataPipeline\registry\TransformerRegistry;
 
-final class PipelineRuntimeFactory 
+final class PipelineRuntimeFactory
 {
 
   

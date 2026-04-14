@@ -16,8 +16,8 @@ interface ValidateOptionsInterface
 {
 
     /**
-     * rules 
-     * 
+     * rules
+     *
      * @return void
      */
     public function validateOptions(array $options, ErrorCollector $errorCollector): void;

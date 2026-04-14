@@ -66,17 +66,15 @@ class JsonFileConfigReader implements ConfigLoaderInterface
                 options:($attributes['processor']['options']) ?? null
             );
         }
-        $config = new PipelineConfig(
+        return new PipelineConfig(
             name: $attributes['name'],
-            version: $attributes['version'], 
+            version: $attributes['version'],
             stopOnError: (isset($attributes['stopOnError']) === true) ? $attributes['stopOnError'] : false,
             source: new SourceConfig($attributes['source']['type'], $attributes['source']['name'], $attributes['source']['options']),
             target: new TargetConfig($attributes['target']['type'], $attributes['target']['name'], $attributes['target']['options']),
             columns: static::prepareColumns($columns),
             processor: $processor
         );
-
-        return $config;
     }
 
 
