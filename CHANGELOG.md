@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Release v1.1.1 27/04/2026 <davidg@webcraftdg.fr>
+----------------------------------------------
+
+* Update Date End Point Type Enum
+
 Release v1.1.0 13/04/2026 <davidg@webcraftdg.fr>
 ----------------------------------------------
 
