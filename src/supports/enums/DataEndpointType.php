@@ -14,7 +14,6 @@ enum DataEndpointType
 {
     const FILE = 'file';
     const ARRAY = 'array';
-    const SQL = 'sql';
-    const TABLE = 'table';
+    const DATABASE = 'database';
     const VIEW = 'view';
 }
