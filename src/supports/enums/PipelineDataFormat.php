@@ -19,4 +19,6 @@ enum PipelineDataFormat
     const JSON = 'json';
     const NDJSON = 'ndjson';
     const ARRAY = 'array';
+    const TABLE = 'table';
+    const SQL = 'sql';
 }
