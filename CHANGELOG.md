@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Release v1.1.2 28/04/2026 <davidg@webcraftdg.fr>
+----------------------------------------------
+
+* Update formats Enum : sql and table
+
 Release v1.1.1 27/04/2026 <davidg@webcraftdg.fr>
 ----------------------------------------------
 
