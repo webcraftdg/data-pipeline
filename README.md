@@ -1,6 +1,6 @@
 # webcraftdg/data-pipeline
 
-![Coverage](https://img.shields.io/badge/coverage-86.5%25-brightgreen)
+![Coverage](https://img.shields.io/badge/coverage-87.1%25-brightgreen)
 ![Maintainability](https://img.shields.io/badge/maintainability-A-brightgreen)
 ![Reliability](https://img.shields.io/badge/reliability-A-brightgreen)
 ![Security](https://img.shields.io/badge/security-A-brightgreen)
