@@ -10,12 +10,24 @@
  */
 namespace webcraftdg\dataPipeline\configs;
 
-class TransformerConfig
+use webcraftdg\dataPipeline\interfaces\OptionsConfigInterface;
+
+class TransformerConfig implements OptionsConfigInterface
 {
     public function __construct(
         public string $name,
         public array $options = []
     )
     {
+    }
+
+    /**
+     * get options
+     *
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
     }
 }

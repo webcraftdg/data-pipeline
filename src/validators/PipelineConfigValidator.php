@@ -172,10 +172,10 @@ final class PipelineConfigValidator
 
             if ($class !== null && method_exists($class, 'rules') === true) {
                 $this->optionsValidator->validate(
-                    $transformerPath,
-                    $class::rules(),
-                    $transformer->options,
-                    $errorCollector
+                    path: $transformerPath,
+                    rules: $class::rules(),
+                    dataConfig: $transformer,
+                    errorCollector: $errorCollector
                 );
             }
         }
@@ -209,10 +209,10 @@ final class PipelineConfigValidator
 
             if ($class !== null && method_exists($class, 'rules') === true) {
                 $this->optionsValidator->validate(
-                    'TargetConfig : '.$config->target->name,
-                    $class::rules(),
-                    $config->target->options,
-                    $errorCollector
+                    path: 'TargetConfig : '.$config->target->name,
+                    rules: $class::rules(),
+                    dataConfig: $config->target,
+                    errorCollector: $errorCollector
                 );
             }
         }
@@ -246,10 +246,10 @@ final class PipelineConfigValidator
 
             if ($class !== null && method_exists($class, 'rules') === true) {
                 $this->optionsValidator->validate(
-                    'SourceConfig : '.$config->source->name,
-                    $class::rules(),
-                    $config->source->options,
-                    $errorCollector
+                    path: 'SourceConfig : '.$config->source->name,
+                    rules: $class::rules(),
+                    dataConfig: $config->source,
+                    errorCollector: $errorCollector
                 );
             }
         }
@@ -279,17 +279,6 @@ final class PipelineConfigValidator
                     message: sprintf('Unknown processor "%s".', $config->processor->name),
                     level:ValidationError::LEVEL_VALIDATION_ERROR)
                 );
-            } else {
-                $class = $this->processorRegistry->getClass($config->processor->name);
-
-                if ($class !== null && method_exists($class, 'rules') === true) {
-                    $this->optionsValidator->validate(
-                        'ProcessorConfig : '.$config->processor->name,
-                        $class::rules(),
-                        $config->processor->options,
-                        $errorCollector
-                    );
-                }
             }
         }
         return $errorCollector;

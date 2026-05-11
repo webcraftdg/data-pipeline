@@ -10,6 +10,17 @@
  */
 namespace webcraftdg\dataPipeline\configs;
 
-class TargetConfig extends DataConfig
+use webcraftdg\dataPipeline\interfaces\OptionsConfigInterface;
+
+class TargetConfig extends DataConfig implements OptionsConfigInterface
 {
+    /**
+     * get options
+     *
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
 }
