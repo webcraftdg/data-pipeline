@@ -10,7 +10,9 @@
  */
 namespace webcraftdg\dataPipeline\configs;
 
-final class ColumnMapping
+use webcraftdg\dataPipeline\interfaces\OptionsConfigInterface;
+
+final class ColumnMapping implements OptionsConfigInterface
 {
 
     /**
@@ -28,5 +30,15 @@ final class ColumnMapping
         public array $options = []
     )
     {
+    }
+
+    /**
+     * get options
+     *
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
     }
 }

@@ -10,8 +10,9 @@
  */
 namespace webcraftdg\dataPipeline\configs;
 
+use webcraftdg\dataPipeline\interfaces\OptionsConfigInterface;
 
-class PipelineConfig
+class PipelineConfig implements OptionsConfigInterface
 {
     /**
      * constructor
@@ -36,5 +37,15 @@ class PipelineConfig
         public array $options = []
     )
     {
+    }
+
+    /**
+     * get options
+     *
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
     }
 }

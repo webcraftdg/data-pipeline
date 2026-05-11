@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Release v1.2.0 11/05/2026 <davidg@webcraftdg.fr>
+----------------------------------------------
+
+* add interface options
+* Implemented option 'when' and 'enum' in rules
+
 Release v1.1.2 28/04/2026 <davidg@webcraftdg.fr>
 ----------------------------------------------
 
