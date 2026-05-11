@@ -10,12 +10,24 @@
  */
 namespace webcraftdg\dataPipeline\configs;
 
-class ProcessorConfig
+use webcraftdg\dataPipeline\interfaces\OptionsConfigInterface;
+
+class ProcessorConfig implements OptionsConfigInterface
 {
     public function __construct(
         public string $name,
         public array $options = []
     )
     {
+    }
+
+    /**
+     * get options
+     *
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
     }
 }

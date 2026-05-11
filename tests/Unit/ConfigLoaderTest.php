@@ -15,6 +15,7 @@ use webcraftdg\dataPipeline\exceptions\ProcessorResult;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\interfaces\ProcessorInterface;
+use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 use webcraftdg\dataPipeline\pipelines\PipelineExecutor;
 use webcraftdg\dataPipeline\processors\ValidateEmailProcessor;
 use webcraftdg\dataPipeline\registry\InputRegistry;
@@ -66,7 +67,60 @@ class UserImportProcessor implements ProcessorInterface
     }
 }
 
+class TableInput implements InputInterface, ValidateRulesInterface
+{
 
+    private int $batchSize = 250;
+
+    public function __construct(private array $options = [])
+    {
+        $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
+    }
+    
+    /**
+     * open
+     *
+     * @return void
+     */
+    public function open(): void
+    {
+    }
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public static function rules() : array
+    {
+        return [
+            'table' => ['required' => true, 'type' => 'string', 'when' => ['name' => 'table']],
+            'mode' => ['required' => true, 'type' => 'enum', 'options'=> ['insert', 'update', 'upsert']],
+            'headers' => ['required' => false, 'type' => 'array'],
+            'footer' => ['required' => false, 'type' => 'string'],
+            'batchSize' => ['required' => false, 'type' => 'integer'],
+        ];
+    }
+
+    /**
+     * read
+     *
+     * @return iterable
+     */
+    public function read(): iterable
+    {
+        return [];
+    }
+
+    /**
+     * close
+     *
+     * @return void
+     */
+    public function close(): void
+    {
+    }
+}
 class ConfigLoaderTest extends \Codeception\Test\Unit
 {
 
@@ -1541,7 +1595,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
 
     }
     
-    public function testPipelineExemple()
+      public function testPipelineExemple()
     {
        $config = new PipelineConfig(
         name: 'import-users',
@@ -1574,7 +1628,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
             ])
         ],
         processor: new ProcessorConfig('user-import')
-    );
+        );
 
         $processors = [
             'user-import' => UserImportProcessor::class
@@ -1614,5 +1668,231 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertNotEmpty($content);
 
 
+    }
+
+    public function testWhenValidation()
+    {
+       $config = new PipelineConfig(
+        name: 'import-users',
+        version: 1,
+        stopOnError: true,
+
+        source: new SourceConfig(DataEndpointType::DATABASE, PipelineDataFormat::TABLE, [
+            'table' => 'users',
+            'mode' => 'insert',
+            'footer' => 'Liste des fans',
+            'headers' => ['id', 'name', 'email', 'birthday']
+        ]),
+
+        target: new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
+             'path' => __DIR__ . '/../Support/Data/testPipelineExemple.json',
+        ]),
+
+        columns: [
+            new ColumnMapping('id', 'id'),
+
+            new ColumnMapping('name', 'name', [
+                new TransformerConfig('upper')
+            ]),
+
+            new ColumnMapping('email', 'email'),
+
+            new ColumnMapping('birthday', 'birthday', [
+                new TransformerConfig('date', [
+                    'from' => 'Y-m-d',
+                    'to' => 'Y-m-d'
+                ])
+            ])
+        ],
+        processor: new ProcessorConfig('user-import')
+        );
+
+        $processors = [
+            'user-import' => UserImportProcessor::class
+        ];
+
+        $inputRegistry = new InputRegistry(['table' => TableInput::class]);
+        $pipelineFactory = new PipelineRuntimeFactory(
+            inputRegistry: $inputRegistry, 
+            outputRegistry: new OutputRegistry(), 
+            processorRegistry: new ProcessorRegistry($processors), 
+            transformerRegistry: new TransformerRegistry()
+        );
+        $optionValidation = new OptionsValidator();
+
+        $pipelineValidation = new PipelineConfigValidator(
+            inputRegistry: $pipelineFactory->inputRegistry,
+            outputRegistry: $pipelineFactory->outputRegistry,
+            transformerRegistry: $pipelineFactory->transformerRegistry,
+            processorRegistry: $pipelineFactory->processorRegistry,
+            optionsValidator: $optionValidation);
+
+        $errorCollector = $pipelineValidation->validate($config);
+        $this->tester->assertFalse($errorCollector->hasErrors());
+        //Error
+        $config = new PipelineConfig(
+        name: 'import-users',
+        version: 1,
+        stopOnError: true,
+
+        source: new SourceConfig(DataEndpointType::DATABASE, PipelineDataFormat::TABLE, [
+            'table' => 'users',
+            'mode' => 'inserted',
+        ]),
+
+        target: new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
+             'path' => __DIR__ . '/../Support/Data/testPipelineExemple.json',
+        ]),
+
+        columns: [
+            new ColumnMapping('id', 'id'),
+
+            new ColumnMapping('name', 'name', [
+                new TransformerConfig('upper')
+            ]),
+
+            new ColumnMapping('email', 'email'),
+
+            new ColumnMapping('birthday', 'birthday', [
+                new TransformerConfig('date', [
+                    'from' => 'Y-m-d',
+                    'to' => 'Y-m-d'
+                ])
+            ])
+        ],
+        processor: new ProcessorConfig('user-import')
+        );
+
+        $processors = [
+            'user-import' => UserImportProcessor::class
+        ];
+
+        $inputRegistry = new InputRegistry(['table' => TableInput::class]);
+        $pipelineFactory = new PipelineRuntimeFactory(
+            inputRegistry: $inputRegistry, 
+            outputRegistry: new OutputRegistry(), 
+            processorRegistry: new ProcessorRegistry($processors), 
+            transformerRegistry: new TransformerRegistry()
+        );
+        $optionValidation = new OptionsValidator();
+
+        $pipelineValidation = new PipelineConfigValidator(
+            inputRegistry: $pipelineFactory->inputRegistry,
+            outputRegistry: $pipelineFactory->outputRegistry,
+            transformerRegistry: $pipelineFactory->transformerRegistry,
+            processorRegistry: $pipelineFactory->processorRegistry,
+            optionsValidator: $optionValidation);
+
+        $errorCollector = $pipelineValidation->validate($config);
+        $this->tester->assertTrue($errorCollector->hasErrors());
+        //Others Errors
+        $config = new PipelineConfig(
+            name: 'import-users',
+            version: 1,
+            stopOnError: true,
+
+            source: new SourceConfig(DataEndpointType::DATABASE, PipelineDataFormat::TABLE, [
+                'mode' => 'inserted',
+                'batchSize' => 250
+            ]),
+
+            target: new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::ARRAY, [
+                'rows' => __DIR__ . '/../Support/Data/testPipelineExemple.json',
+            ]),
+
+            columns: [
+                 new ColumnMapping('id', ''),
+
+            new ColumnMapping('name', 'name', [
+                new TransformerConfig('upper')
+            ]),
+            ],
+            processor: new ProcessorConfig('user-import')
+        );
+
+        $processors = [
+            'user-import' => UserImportProcessor::class
+        ];
+
+        $inputRegistry = new InputRegistry(['table' => TableInput::class]);
+        $pipelineFactory = new PipelineRuntimeFactory(
+            inputRegistry: $inputRegistry, 
+            outputRegistry: new OutputRegistry(), 
+            processorRegistry: new ProcessorRegistry($processors), 
+            transformerRegistry: new TransformerRegistry()
+        );
+        $optionValidation = new OptionsValidator();
+
+        $pipelineValidation = new PipelineConfigValidator(
+            inputRegistry: $pipelineFactory->inputRegistry,
+            outputRegistry: $pipelineFactory->outputRegistry,
+            transformerRegistry: $pipelineFactory->transformerRegistry,
+            processorRegistry: $pipelineFactory->processorRegistry,
+            optionsValidator: $optionValidation);
+
+        $errorCollector = $pipelineValidation->validate($config);
+        $this->tester->assertTrue($errorCollector->hasErrors());
+
+    }
+
+     public function testOthersValidation()
+    {
+       $config = new PipelineConfig(
+        name: 'import-users',
+        version: 1,
+        stopOnError: true,
+
+        source: new SourceConfig(DataEndpointType::DATABASE, 'tbme', [
+            'table' => 'users',
+            'mode' => 'insert',
+            'footer' => 'Liste des fans',
+            'headers' => ['id', 'name', 'email', 'birthday']
+        ]),
+
+        target: new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
+             'path' => __DIR__ . '/../Support/Data/testPipelineExemple.json',
+        ]),
+
+        columns: [
+            new ColumnMapping('id', 'id'),
+
+            new ColumnMapping('name', 'name', [
+                new TransformerConfig('upper')
+            ]),
+
+            new ColumnMapping('email', 'email'),
+
+            new ColumnMapping('birthday', 'birthday', [
+                new TransformerConfig('date', [
+                    'from' => 'Y-m-d',
+                    'to' => 'Y-m-d'
+                ])
+            ])
+        ],
+        processor: new ProcessorConfig('user-import')
+        );
+
+        $processors = [
+            'user-import' => UserImportProcessor::class
+        ];
+
+        $inputRegistry = new InputRegistry(['table' => TableInput::class]);
+        $pipelineFactory = new PipelineRuntimeFactory(
+            inputRegistry: $inputRegistry, 
+            outputRegistry: new OutputRegistry(), 
+            processorRegistry: new ProcessorRegistry($processors), 
+            transformerRegistry: new TransformerRegistry()
+        );
+        $optionValidation = new OptionsValidator();
+
+        $pipelineValidation = new PipelineConfigValidator(
+            inputRegistry: $pipelineFactory->inputRegistry,
+            outputRegistry: $pipelineFactory->outputRegistry,
+            transformerRegistry: $pipelineFactory->transformerRegistry,
+            processorRegistry: $pipelineFactory->processorRegistry,
+            optionsValidator: $optionValidation);
+
+        $errorCollector = $pipelineValidation->validate($config);
+        $this->tester->assertTrue($errorCollector->hasErrors());
     }
 }
