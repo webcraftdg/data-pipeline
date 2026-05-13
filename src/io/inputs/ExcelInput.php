@@ -19,6 +19,8 @@ use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\InputSpreadsheetInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 use InvalidArgumentException;
+use webcraftdg\dataPipeline\configs\SourceConfig;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 
 class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateRulesInterface
 {
@@ -26,6 +28,7 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateR
 
     private Spreadsheet $spreadsheet;
     private Worksheet $sheet;
+    private array $options;
     private int $maxColumns = 0;
     private array $headers = [];
     private int $batchSize = 250;
@@ -33,18 +36,23 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateR
     private string $enclosure = '"';
     private string $inputEncoding = 'ISO-8859-1';
 
-     /**
+    /**
      * constructor
      *
-     * @param  array          $options
+     * @param  SourceConfig                 $config
+     * @param  RuntimeContextInterface|null $context
      */
-    public function __construct(private array $options = [])
+    public function __construct(
+        private SourceConfig $config,
+        ?RuntimeContextInterface $context = null
+    )
     {
-        $this->headers = ($options['headers']) ?? [];
-        $this->batchSize = ($options['batchSize']) ?? $this->batchSize;
-        $this->delimiter = ($options['delimiter']) ?? ';';
-        $this->enclosure = ($options['enclosure']) ?? '"';
-        $this->inputEncoding = ($options['inputEncoding']) ?? 'ISO-8859-1';
+        $this->options = $this->config->getOptions();
+        $this->headers = ($this->options['headers']) ?? [];
+        $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
+        $this->delimiter = ($this->options['delimiter']) ?? ';';
+        $this->enclosure = ($this->options['enclosure']) ?? '"';
+        $this->inputEncoding = ($this->options['inputEncoding']) ?? 'ISO-8859-1';
     }
 
     /**

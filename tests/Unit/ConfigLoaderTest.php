@@ -15,6 +15,7 @@ use webcraftdg\dataPipeline\exceptions\ProcessorResult;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\interfaces\ProcessorInterface;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 use webcraftdg\dataPipeline\pipelines\PipelineExecutor;
 use webcraftdg\dataPipeline\processors\ValidateEmailProcessor;
@@ -71,9 +72,14 @@ class TableInput implements InputInterface, ValidateRulesInterface
 {
 
     private int $batchSize = 250;
+    private array $options;
 
-    public function __construct(private array $options = [])
+    public function __construct(
+        private SourceConfig $config,
+        ?RuntimeContextInterface $context = null
+    )
     {
+        $this->options = $config->getOptions();
         $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
     }
     
@@ -249,9 +255,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
 
 
         $pipelinRuntime = (new PipelineRuntimeFactory(
-            new InputRegistry(), 
-            new OutputRegistry(), 
-            new ProcessorRegistry(), 
+            new InputRegistry(),
+            new OutputRegistry(),
+            new ProcessorRegistry(),
             $registryTransfromer
         ))->create($config);
 
@@ -260,6 +266,10 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
         $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
 
+        $targetArray = $config->target->toArray();
+        $this->tester->assertArrayHasKey('type', $targetArray);
+        $this->tester->assertArrayHasKey('name', $targetArray);
+        $this->tester->assertArrayHasKey('options', $targetArray);
 
 
         $executor = new PipelineExecutor();
@@ -551,9 +561,8 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $fileJson = __DIR__.'/../Support/Data/test_ouput.xlsx';
         $content = file_get_contents($fileJson);
         $this->tester->assertNotEmpty($content);
-
     }
-
+   
     public function testPipelineToXml()
     {
         $inputRows = [

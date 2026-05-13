@@ -10,8 +10,9 @@
  */
 namespace webcraftdg\dataPipeline\io\inputs;
 
-
+use webcraftdg\dataPipeline\configs\SourceConfig;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
 class NDJsonInput implements InputInterface, ValidateRulesInterface
@@ -19,15 +20,21 @@ class NDJsonInput implements InputInterface, ValidateRulesInterface
 
     private $handle;
     private $path;
+    private array $options;
     private int $batchSize = 250;
 
     /**
      * constructor
      *
-     * @param  array          $options
+     * @param  SourceConfig                 $config
+     * @param  RuntimeContextInterface|null $context
      */
-    public function __construct(private array $options = [])
+    public function __construct(
+        private SourceConfig $config,
+        ?RuntimeContextInterface $context = null
+    )
     {
+        $this->options = $this->config->getOptions();
         $this->path = ($this->options['path']) ?? '';
         $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
     }

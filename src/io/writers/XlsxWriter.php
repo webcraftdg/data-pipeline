@@ -14,10 +14,10 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\contexts\OutputContext;
 use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
 use webcraftdg\dataPipeline\configs\ColumnMapping;
 use InvalidArgumentException;
+use webcraftdg\dataPipeline\context\OutputContext;
 
 class XlsxWriter implements DataWriterInterface
 {
@@ -26,6 +26,7 @@ class XlsxWriter implements DataWriterInterface
      */
     private array $sheetCursors = [];
     private array $sheetHeaders = [];
+    private OutputContext $outputContext;
     /**
      * @var Spreadsheet
      */
@@ -41,12 +42,21 @@ class XlsxWriter implements DataWriterInterface
     private array $sheetsByTitle = [];
 
     /**
-     * @param Spreadsheet $spreadsheet
+     * constructor
+     *
+     * @param  \webcraftdg\dataPipeline\configs\PipelineConfig $config
+     * @param  array                                           $options
      */
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
         $this->spreadsheet = new Spreadsheet();
         $this->path = ($this->options['path']) ?? null;
+           $this->outputContext = new OutputContext(
+            colOffset: ($this->options['colOffset']) ?? 1,
+            rowOffset: ($this->options['rowOffset']) ?? 1,
+            sectionName: ($this->options['sectionName']) ?? 'onglet 1',
+            headers: ($this->options['headers']) ?? []
+        );
     }
 
     /**
@@ -75,19 +85,18 @@ class XlsxWriter implements DataWriterInterface
      * write
      *
      * @param  array              $row
-     * @param  OutputContext|null $context
      *
      * @return void
      */
-    public function write(array $row, ?OutputContext $context = null): void
+    public function write(array $row): void
     {
         /** @var Worksheet $sheet */
-        $sheetName = ($context !== null && empty($context->sectionName)) ? $context->sectionName : 'onglet_1';
+        $sheetName = ($this->outputContext !== null && empty($this->outputContext->sectionName)) ? $this->outputContext->sectionName : 'onglet_1';
         $sheet = $this->getOrCreateSheet($sheetName);
-        $this->addHeaders($sheetName, $sheet, $context);
+        $this->addHeaders($sheetName, $sheet);
         $rowIndex = $this->nextRow($sheetName);
-        $rowIndex = ($rowIndex <= 0 && $context !== null)? $context->rowOffset : $rowIndex;
-        $colIndex = ($context !== null && empty($context->colOffset))? $context->colOffset : 1;
+        $rowIndex = ($rowIndex <= 0 && $this->outputContext !== null)? $this->outputContext->rowOffset : $rowIndex;
+        $colIndex = ($this->outputContext !== null && empty($this->outputContext->colOffset))? $this->outputContext->colOffset : 1;
         $this->writeRow($row, $sheet, $sheetName, $colIndex, $rowIndex);
     }
 
@@ -117,21 +126,20 @@ class XlsxWriter implements DataWriterInterface
      *
      * @param  string                                               $title
      * @param  \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet        $sheet
-     * @param  \webcraftdg\dataPipeline\contexts\OutputContext|null $context
      *
      * @return void
      */
-    private function addHeaders(string $title, Worksheet $sheet, ?OutputContext $context = null): void
+    private function addHeaders(string $title, Worksheet $sheet): void
     {
        if (isset($this->sheetHeaders[$title]) === false) {
-            $headers = ($context !== null && empty($context->headers) === false) ? $context->headers : [];
+            $headers = $this->outputContext->headers;
             if (empty($headers) === true) {
                 $headers = array_map(function(ColumnMapping $column) {
                     return $column->outputKey;
                 }, $this->config->columns);
             }
-            $rowIndex = ($context !== null && empty($context->rowOffset))? $context->rowOffset : 1;
-            $colIndex = ($context !== null && empty($context->colOffset))? $context->colOffset : 1;
+            $rowIndex = ($this->outputContext !== null && empty($this->outputContext->rowOffset))? $this->outputContext->rowOffset : 1;
+            $colIndex = ($this->outputContext !== null && empty($this->outputContext->colOffset))? $this->outputContext->colOffset : 1;
             $this->writeRow($headers, $sheet, $title, $colIndex, $rowIndex);
             $this->sheetHeaders[$title] = $headers;
         }

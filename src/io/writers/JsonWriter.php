@@ -31,12 +31,18 @@ class JsonWriter implements DataWriterInterface
      * constructor
      *
      * @param  \webcraftdg\dataPipeline\configs\PipelineConfig $config
+     * @param  array                                           $options
      */
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
          $this->path = ($this->options['path']) ?? null;
     }
 
+    /**
+     * open
+     *
+     * @return void
+     */
     public function open(): void
     {
         if ($this->path === null) {
@@ -63,11 +69,10 @@ class JsonWriter implements DataWriterInterface
      * write
      *
      * @param  array                                            $row
-     * @param  OutputContext|null                               $context
      *
      * @return void
      */
-    public function write(array $row, ?OutputContext $context = null): void
+    public function write(array $row): void
     {
         if (empty($row) === false) {
             if ($this->firstRecord === false) {

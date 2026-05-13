@@ -12,7 +12,6 @@ namespace webcraftdg\dataPipeline\io\writers;
 
 use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\contexts\OutputContext;
 use XMLWriter as GlobalXMLWriter;
 use InvalidArgumentException;
 
@@ -66,11 +65,10 @@ class XmlWriter implements DataWriterInterface
      * write
      *
      * @param  array              $row
-     * @param  OutputContext|null $context
      *
      * @return void
      */
-    public function write(array $row, ?OutputContext $context = null): void
+    public function write(array $row): void
     {
         if (empty($row) === false) {
             $this->xmlWriter->startElement('record');

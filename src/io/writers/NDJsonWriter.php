@@ -68,11 +68,10 @@ class NDJsonWriter implements DataWriterInterface
      * write
      *
      * @param  array                                                $row
-     * @param  \webcraftdg\dataPipeline\contexts\OutputContext|null $context
      *
      * @return void
      */
-    public function write(array $row, ?OutputContext $context = null): void
+    public function write(array $row): void
     {
         if (empty($row) === false) {
             $row = array_merge(['_type' => 'data'], $row);

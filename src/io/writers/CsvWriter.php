@@ -13,7 +13,7 @@ namespace webcraftdg\dataPipeline\io\writers;
 use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
 use webcraftdg\dataPipeline\configs\ColumnMapping;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\contexts\OutputContext;
+use webcraftdg\dataPipeline\context\OutputContext;
 use InvalidArgumentException;
 
 class CsvWriter implements DataWriterInterface
@@ -28,12 +28,14 @@ class CsvWriter implements DataWriterInterface
     private string $enclosure = '"';
     private string $escape = '\\';
     private string $eol = '\n';
+    private OutputContext $outputContext;
 
 
-      /**
+    /**
      * constructor
      *
-     * @param  \webcraftdg\dataPipeline\configs\PipelineConfig $config
+     * @param  PipelineConfig $config
+     * @param  array          $options
      */
     public function __construct(private PipelineConfig $config, private array $options = [])
     {
@@ -42,6 +44,12 @@ class CsvWriter implements DataWriterInterface
         $this->enclosure = ($this->options['enclosure']) ?? $this->delimiter;
         $this->escape = ($this->options['escape']) ?? $this->escape;
         $this->eol = ($this->options['eol']) ?? $this->eol;
+        $this->outputContext = new OutputContext(
+            colOffset: 1,
+            rowOffset: 1,
+            sectionName: 'onglet 1',
+            headers: ($this->options['headers']) ?? []
+        );
     }
 
     /**
@@ -61,28 +69,25 @@ class CsvWriter implements DataWriterInterface
      * write
      *
      * @param  array              $row
-     * @param  OutputContext|null $context
      *
      * @return void
      */
-    public function write(array $row, ?OutputContext $context = null): void
+    public function write(array $row): void
     {
-        $this->addHeaders($context);
+        $this->addHeaders();
         fputcsv($this->handle, $row, $this->delimiter, $this->enclosure, $this->escape, $this->eol);
     }
 
     /**
      * add headers
      *
-     * @param  OutputContext|null $context
-     *
      * @return void
      */
-    private function addHeaders(?OutputContext $context = null): void
+    private function addHeaders(): void
     {
 
         if ($this->headerWritten === false) {
-            $headers = ($context !== null && empty($context->headers) === false) ? $context->headers : [];
+            $headers = $this->outputContext->headers;
             if (empty($headers) === true) {
                 $headers = array_map(function(ColumnMapping $column) {
                     return $column->outputKey;

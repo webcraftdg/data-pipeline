@@ -19,6 +19,7 @@ use webcraftdg\dataPipeline\io\inputs\XmlInput;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\builders\HeadersBuider;
 use webcraftdg\dataPipeline\exceptions\RegistryException;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 
 class InputRegistry
 {
@@ -48,11 +49,12 @@ class InputRegistry
     /**
      * create
      *
-     * @param  PipelineConfig $config
+     * @param  PipelineConfig               $config
+     * @param  RuntimeContextInterface|null $context
      *
      * @return InputInterface
      */
-    public function create(PipelineConfig $config): InputInterface
+    public function create(PipelineConfig $config, ?RuntimeContextInterface $context = null): InputInterface
     {
         if (isset($this->map[$config->source->name]) === false) {
             throw new RegistryException('Unknown input "' . $config->source->name . '".');
@@ -62,7 +64,7 @@ class InputRegistry
             $options['headers'] = HeadersBuider::fromPipeline($config);
         }
         $class = $this->map[$config->source->name];
-        return new $class($options);
+        return new $class($config->source, $context);
     }
 
     /**

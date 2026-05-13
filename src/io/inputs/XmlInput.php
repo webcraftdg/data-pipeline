@@ -10,13 +10,16 @@
  */
 namespace webcraftdg\dataPipeline\io\inputs;
 
+use webcraftdg\dataPipeline\configs\SourceConfig;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 use XMLReader as GlobalXMLReader;
 
 class XmlInput implements InputInterface, ValidateRulesInterface
 {
 
+    private array $options;
     /**
      * $xmlReader
      *
@@ -35,11 +38,16 @@ class XmlInput implements InputInterface, ValidateRulesInterface
     /**
      * constructor
      *
-     * @param  array          $options
+     * @param  SourceConfig                 $config
+     * @param  RuntimeContextInterface|null $context
      */
-    public function __construct(private array $options = [])
+    public function __construct(
+        private SourceConfig $config,
+        ?RuntimeContextInterface $context = null
+    )
     {
         $this->xmlReader = new GlobalXMLReader();
+        $this->options = $config->getOptions();
     }
 
     /**
