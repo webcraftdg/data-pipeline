@@ -13,9 +13,9 @@ namespace webcraftdg\dataPipeline\io\outputs;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\XmlWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\contexts\OutputContext;
 use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
+use webcraftdg\dataPipeline\rules\FileRules;
 
 class XmlOutput implements OutputInterface, ValidateRulesInterface
 {
@@ -24,7 +24,8 @@ class XmlOutput implements OutputInterface, ValidateRulesInterface
      *
      * @var XmlWriter
      */
-    private  XmlWriter $writer;
+    private XmlWriter $writer;
+    private ?RuntimeContextInterface $context;
 
 
     /**
@@ -38,8 +39,19 @@ class XmlOutput implements OutputInterface, ValidateRulesInterface
         ?RuntimeContextInterface $context = null)
     {
         $this->writer = new XmlWriter($this->config, $this->config->target->getOptions());
+        $this->context = $context;
     }
 
+
+      /**
+     * rules
+     *
+     * @return array
+     */
+    public static function rules() : array
+    {
+        return FileRules::rulesPath();
+    }
  
     /**
      * open
@@ -49,18 +61,6 @@ class XmlOutput implements OutputInterface, ValidateRulesInterface
     public function open(): void
     {
         $this->writer->open();
-    }
-
-    /**
-     * rules
-     *
-     * @return array
-     */
-    public static function rules() : array
-    {
-        return [
-            'path' => ['required' => false, 'type' => 'string'],
-        ];
     }
  
     /**

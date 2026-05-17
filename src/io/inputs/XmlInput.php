@@ -14,7 +14,9 @@ use webcraftdg\dataPipeline\configs\SourceConfig;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
+use webcraftdg\dataPipeline\rules\FileRules;
 use XMLReader as GlobalXMLReader;
+use yii\helpers\ArrayHelper;
 
 class XmlInput implements InputInterface, ValidateRulesInterface
 {
@@ -33,6 +35,7 @@ class XmlInput implements InputInterface, ValidateRulesInterface
      * @var int
      */
     private $batchSize = 250;
+    private ?RuntimeContextInterface $context;
 
 
     /**
@@ -47,7 +50,18 @@ class XmlInput implements InputInterface, ValidateRulesInterface
     )
     {
         $this->xmlReader = new GlobalXMLReader();
-        $this->options = $config->getOptions();
+        $this->options = $this->config->getOptions();
+        $this->context = $context;
+    }
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public static function rules() : array
+    {
+        return ArrayHelper::merge(FileRules::rulesPath(), FileRules::rulesBatchSize());
     }
 
     /**
@@ -60,19 +74,6 @@ class XmlInput implements InputInterface, ValidateRulesInterface
         $filePath = ($this->options['path']) ?? '';
         $this->xmlReader->open($filePath);
         $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
-    }
-
-        /**
-     * rules
-     *
-     * @return array
-     */
-    public static function rules() : array
-    {
-        return [
-            'path' => ['required' => true, 'type' => 'string'],
-            'batchSize' => ['required' => false, 'type' => 'integer'],
-        ];
     }
 
     /**

@@ -40,7 +40,14 @@ class DateXlsColumnTransformer implements TransformerInterface, ValidateRulesInt
     public static function rules() : array
     {
         return [
-            'to' => ['required' => true, 'type' => 'string', 'label'=>'Format cible'],
+            'to' => [
+                'name' => 'to',
+                'label'=>'Format cible',
+                'type' => 'string',
+                'required' => true,
+                'runtimeRequired' => true,
+                'options' => null
+            ],
         ];
     }
 

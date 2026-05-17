@@ -15,14 +15,10 @@ use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class JsonInput implements InputInterface, ValidateRulesInterface
+class JsonInput extends FileJsonInput implements InputInterface, ValidateRulesInterface
 {
 
-    private int $batchSize = 250;
-    private array $options;
-    private string $path;
     private array $records = [];
-
 
     /**
      * constructor
@@ -38,6 +34,7 @@ class JsonInput implements InputInterface, ValidateRulesInterface
         $this->options = $this->config->getOptions();
         $this->path = ($this->options['path']) ?? '';
         $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
+        $this->context = $context;
     }
     
     /**
@@ -49,19 +46,6 @@ class JsonInput implements InputInterface, ValidateRulesInterface
     {
         $data = json_decode(file_get_contents($this->path), true);
         $this->records = ($data['records']) ?? [];
-    }
-
-    /**
-     * rules
-     *
-     * @return array
-     */
-    public static function rules() : array
-    {
-        return [
-            'path' => ['required' => true, 'type' => 'string'],
-            'batchSize' => ['required' => false, 'type' => 'integer'],
-        ];
     }
 
     /**

@@ -12,9 +12,11 @@ namespace webcraftdg\dataPipeline\io\inputs;
 
 use webcraftdg\dataPipeline\interfaces\InputCountableInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
-use InvalidArgumentException;
 use webcraftdg\dataPipeline\configs\SourceConfig;
 use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
+use webcraftdg\dataPipeline\rules\FileRules;
+use yii\helpers\ArrayHelper;
+use InvalidArgumentException;
 
 class ArrayDataInput implements InputCountableInterface, ValidateRulesInterface
 {
@@ -22,6 +24,7 @@ class ArrayDataInput implements InputCountableInterface, ValidateRulesInterface
     private array $rows;
     private $options;
     private int $batchSize = 200;
+    private ?RuntimeContextInterface $context;
 
     /**
      * constructor
@@ -40,6 +43,7 @@ class ArrayDataInput implements InputCountableInterface, ValidateRulesInterface
             throw new InvalidArgumentException('ArrayExportData excepted params "rows"');
         }
         $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
+        $this->context = $context;
     }
 
     /**
@@ -60,10 +64,18 @@ class ArrayDataInput implements InputCountableInterface, ValidateRulesInterface
      */
     public static function rules() : array
     {
-        return [
-            'rows' => ['required' => true, 'type' => 'array'],
-            'batchSize' => ['required' => false, 'type' => 'integer'],
+        $local =  [
+            'rows' => [
+                'name' => 'rows',
+                'label' => 'Tableau source key => value',
+                'type' => 'array',
+                'input' => false,
+                'runtimeRequired' => true,
+                'required' => true,
+            ],
         ];
+        $batchSize = FileRules::rulesBatchSize();
+        return ArrayHelper::merge($local, $batchSize);
     }
     /**
      * @return iterable

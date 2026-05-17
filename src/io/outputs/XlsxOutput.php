@@ -15,6 +15,8 @@ use webcraftdg\dataPipeline\io\writers\XlsxWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
+use webcraftdg\dataPipeline\rules\FileRules;
+use yii\helpers\ArrayHelper;
 
 class XlsxOutput implements OutputInterface, ValidateRulesInterface
 {
@@ -23,7 +25,8 @@ class XlsxOutput implements OutputInterface, ValidateRulesInterface
      *
      * @var XlsxWriter
      */
-    private  XlsxWriter $writer;
+    private XlsxWriter $writer;
+    private ?RuntimeContextInterface $context;
 
     /**
      * constructor
@@ -36,8 +39,19 @@ class XlsxOutput implements OutputInterface, ValidateRulesInterface
         ?RuntimeContextInterface $context = null)
     {
         $this->writer = new XlsxWriter($this->config, $this->config->target->getOptions());
+        $this->context = $context;
     }
 
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public static function rules() : array
+    {
+        return ArrayHelper::merge(FileRules::rulesHeader(), FileRules::rulesPath());
+    }
 
     /**
      * open
@@ -48,19 +62,6 @@ class XlsxOutput implements OutputInterface, ValidateRulesInterface
     {
         $this->writer->open();
     }
-
-    /**
-     * rules
-     *
-     * @return array
-     */
-    public static function rules() : array
-    {
-        return [
-            'path' => ['required' => false, 'type' => 'string'],
-        ];
-    }
-
  
     /**
      * write

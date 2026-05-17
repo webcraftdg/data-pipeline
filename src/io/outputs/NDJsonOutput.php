@@ -15,6 +15,7 @@ use webcraftdg\dataPipeline\io\writers\NDJsonWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
+use webcraftdg\dataPipeline\rules\FileRules;
 
 class NDJsonOutput implements OutputInterface, ValidateRulesInterface
 {
@@ -23,7 +24,8 @@ class NDJsonOutput implements OutputInterface, ValidateRulesInterface
      *
      * @var NDJsonWriter
      */
-    private  NDJsonWriter $writer;
+    private NDJsonWriter $writer;
+    private ?RuntimeContextInterface $context;
 
 
    /**
@@ -37,6 +39,18 @@ class NDJsonOutput implements OutputInterface, ValidateRulesInterface
         ?RuntimeContextInterface $context = null)
     {
         $this->writer = new NDJsonWriter($this->config, $this->config->target->getOptions());
+        $this->context = $context;
+    }
+
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public static function rules() : array
+    {
+        return FileRules::rulesPath();
     }
  
     /**
@@ -48,19 +62,6 @@ class NDJsonOutput implements OutputInterface, ValidateRulesInterface
     {
         $this->writer->open();
     }
-
-    /**
-     * rules
-     *
-     * @return array
-     */
-    public static function rules() : array
-    {
-        return [
-            'path' => ['required' => false, 'type' => 'string'],
-        ];
-    }
-    
 
     /**
      * write

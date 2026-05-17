@@ -15,6 +15,7 @@ use webcraftdg\dataPipeline\io\writers\JsonWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
+use webcraftdg\dataPipeline\rules\FileRules;
 
 class JsonOutput implements OutputInterface, ValidateRulesInterface
 {
@@ -24,6 +25,7 @@ class JsonOutput implements OutputInterface, ValidateRulesInterface
      * @var JsonWriter
      */
     private  JsonWriter $writer;
+    private ?RuntimeContextInterface $context;
 
      /**
      * constructor
@@ -36,6 +38,7 @@ class JsonOutput implements OutputInterface, ValidateRulesInterface
         ?RuntimeContextInterface $context = null)
     {
         $this->writer = new JsonWriter($this->config, $this->config->target->getOptions());
+        $this->context = $context;
     }
 
      /**
@@ -45,9 +48,7 @@ class JsonOutput implements OutputInterface, ValidateRulesInterface
      */
     public static function rules() : array
     {
-        return [
-            'path' => ['required' => false, 'type' => 'string'],
-        ];
+        return FileRules::rulesPath();
     }
 
     /**

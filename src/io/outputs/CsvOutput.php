@@ -15,6 +15,8 @@ use webcraftdg\dataPipeline\io\writers\CsvWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
+use webcraftdg\dataPipeline\rules\FileRules;
+use yii\helpers\ArrayHelper;
 
 class CsvOutput implements OutputInterface, ValidateRulesInterface
 {
@@ -24,6 +26,7 @@ class CsvOutput implements OutputInterface, ValidateRulesInterface
      * @var CsvWriter
      */
     private  CsvWriter $writer;
+    private ?RuntimeContextInterface $context;
 
     /**
      * constructor
@@ -36,29 +39,28 @@ class CsvOutput implements OutputInterface, ValidateRulesInterface
         ?RuntimeContextInterface $context = null)
     {
         $this->writer = new CsvWriter($this->config, $this->config->target->getOptions());
+        $this->context = $context;
     }
  
 
-    public function open(): void
-    {
-        $this->writer->open();
-    }
-
-     /**
+    /**
      * rules
      *
      * @return array
      */
     public static function rules() : array
     {
-        return [
-            'path' => ['required' => false, 'type' => 'string'],
-            'delimiter' => ['required' => false, 'type' => 'string'],
-            'enclosure' => ['required' => false, 'type' => 'string'],
-            'escape' => ['required' => false, 'type' => 'string'],
-            'eol' => ['required' => false, 'type' => 'string'],
-            'batchSize' => ['required' => false, 'type' => 'integer'],
-        ];
+        return ArrayHelper::merge(FileRules::rulesCsv(), FileRules::rulesPath());
+    }
+
+    /**
+     * Open
+     *
+     * @return void
+     */
+    public function open(): void
+    {
+        $this->writer->open();
     }
  
     /**

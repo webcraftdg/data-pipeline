@@ -13,6 +13,7 @@ namespace webcraftdg\dataPipeline\transformers;
 use webcraftdg\dataPipeline\interfaces\TransformerInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 use DateTime;
+use webcraftdg\dataPipeline\rules\TransformerRules;
 
 class DateColumnTransformer implements TransformerInterface, ValidateRulesInterface
 {
@@ -39,10 +40,7 @@ class DateColumnTransformer implements TransformerInterface, ValidateRulesInterf
      */
     public static function rules() : array
     {
-        return [
-            'from' => ['required' => true, 'type' => 'string','label'=>'Format source'],
-            'to' => ['required' => true, 'type' => 'string','label'=>'Format cible'],
-        ];
+        return TransformerRules::rulesFromTo();
     }
 
     /**

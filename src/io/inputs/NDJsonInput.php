@@ -10,34 +10,13 @@
  */
 namespace webcraftdg\dataPipeline\io\inputs;
 
-use webcraftdg\dataPipeline\configs\SourceConfig;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
-use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class NDJsonInput implements InputInterface, ValidateRulesInterface
+class NDJsonInput extends FileJsonInput implements InputInterface, ValidateRulesInterface
 {
 
     private $handle;
-    private $path;
-    private array $options;
-    private int $batchSize = 250;
-
-    /**
-     * constructor
-     *
-     * @param  SourceConfig                 $config
-     * @param  RuntimeContextInterface|null $context
-     */
-    public function __construct(
-        private SourceConfig $config,
-        ?RuntimeContextInterface $context = null
-    )
-    {
-        $this->options = $this->config->getOptions();
-        $this->path = ($this->options['path']) ?? '';
-        $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
-    }
 
     /**
      * open
@@ -49,19 +28,6 @@ class NDJsonInput implements InputInterface, ValidateRulesInterface
         $this->handle = fopen($this->path, 'rb');
     }
 
-
-    /**
-     * rules
-     *
-     * @return array
-     */
-    public static function rules() : array
-    {
-        return [
-            'path' => ['required' => true, 'type' => 'string'],
-            'batchSize' => ['required' => false, 'type' => 'integer'],
-        ];
-    }
     /**
      * read
      *
@@ -77,7 +43,7 @@ class NDJsonInput implements InputInterface, ValidateRulesInterface
                 unset($row['_type']);
                 $batch[] = $row;
                 $indexBatch++;
-                    if ($indexBatch >= $this->batchSize) {
+                if ($indexBatch >= $this->batchSize) {
                     yield $batch;
                     $batch = [];
                     $indexBatch = 0;

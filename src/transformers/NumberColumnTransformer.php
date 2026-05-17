@@ -38,8 +38,16 @@ class NumberColumnTransformer implements TransformerInterface, ValidateRulesInte
      */
     public static function rules() : array
     {
+
         return [
-            'decimals' => ['required' => false, 'type' => 'integer','label'=>'Décimales'],
+            'decimals' => [
+                'name' => 'decimals',
+                'label'=>'Nomde de décimales',
+                'type' => 'integer',
+                'required' => false,
+                'runtimeRequired' => false,
+                'options' => null
+            ],
         ];
     }
     /**
