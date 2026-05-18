@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Release v1.2.0 18/05/2026 <davidg@webcraftdg.fr>
+----------------------------------------------
+
+* update IO rules
+* Exception
+* Add Runtime Context
+
 Release v1.2.0 11/05/2026 <davidg@webcraftdg.fr>
 ----------------------------------------------
 
