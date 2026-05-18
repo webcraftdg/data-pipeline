@@ -19,4 +19,18 @@ abstract class DataConfig
     )
     {
     }
+
+    /**
+     * to array
+     *
+     * @return array
+     */
+    public function toArray() : array
+    {
+        return [
+            'type' => $this->type,
+            'name' => $this->name,
+            'options' => $this->options
+        ];
+    }
 }

@@ -13,8 +13,9 @@ namespace webcraftdg\dataPipeline\io\outputs;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\NDJsonWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\contexts\OutputContext;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
+use webcraftdg\dataPipeline\rules\FileRules;
 
 class NDJsonOutput implements OutputInterface, ValidateRulesInterface
 {
@@ -23,18 +24,33 @@ class NDJsonOutput implements OutputInterface, ValidateRulesInterface
      *
      * @var NDJsonWriter
      */
-    private  NDJsonWriter $writer;
+    private NDJsonWriter $writer;
+    private ?RuntimeContextInterface $context;
+
+
+   /**
+     * constructor
+     *
+     * @param  PipelineConfig               $config
+     * @param  RuntimeContextInterface|null $context
+     */
+    public function __construct(
+        private PipelineConfig $config,
+        ?RuntimeContextInterface $context = null)
+    {
+        $this->writer = new NDJsonWriter($this->config, $this->config->target->getOptions());
+        $this->context = $context;
+    }
 
 
     /**
-     * constructor
+     * rules
      *
-     * @param  PipelineConfig $config
-     * @param  array          $options
+     * @return array
      */
-    public function __construct(private PipelineConfig $config, private array $options = [])
+    public static function rules() : array
     {
-        $this->writer = new NDJsonWriter($this->config, $this->options);
+        return FileRules::rulesPath();
     }
  
     /**
@@ -48,29 +64,15 @@ class NDJsonOutput implements OutputInterface, ValidateRulesInterface
     }
 
     /**
-     * rules
-     *
-     * @return array
-     */
-    public static function rules() : array
-    {
-        return [
-            'path' => ['required' => true, 'type' => 'string'],
-        ];
-    }
-    
-
-    /**
      * write
      *
      * @param  array              $row
-     * @param  OutputContext|null $context
      *
      * @return void
      */
-    public function write(array $row, ?OutputContext $context = null): void
+    public function write(array $row): void
     {
-        $this->writer->write($row, $context);
+        $this->writer->write($row);
     }
 
     /**

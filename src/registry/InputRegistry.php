@@ -12,22 +12,24 @@ namespace webcraftdg\dataPipeline\registry;
 
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\io\inputs\ArrayDataInput;
-use webcraftdg\dataPipeline\io\inputs\ExcelInput;
+use webcraftdg\dataPipeline\io\inputs\XlsInput;
 use webcraftdg\dataPipeline\io\inputs\JsonInput;
 use webcraftdg\dataPipeline\io\inputs\NDJsonInput;
 use webcraftdg\dataPipeline\io\inputs\XmlInput;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\builders\HeadersBuider;
 use webcraftdg\dataPipeline\exceptions\RegistryException;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
+use webcraftdg\dataPipeline\io\inputs\CsvInput;
 
 class InputRegistry
 {
 
     /** @var array<string, string> */
     private array $map = [
-        'xlsx' => ExcelInput::class,
-        'xls' => ExcelInput::class,
-        'csv' => ExcelInput::class,
+        'xlsx' => XlsInput::class,
+        'xls' => XlsInput::class,
+        'csv' => CsvInput::class,
         'json' => JsonInput::class,
         'ndjson' => NDJsonInput::class,
         'xml' => XmlInput::class,
@@ -48,11 +50,12 @@ class InputRegistry
     /**
      * create
      *
-     * @param  PipelineConfig $config
+     * @param  PipelineConfig               $config
+     * @param  RuntimeContextInterface|null $context
      *
      * @return InputInterface
      */
-    public function create(PipelineConfig $config): InputInterface
+    public function create(PipelineConfig $config, ?RuntimeContextInterface $context = null): InputInterface
     {
         if (isset($this->map[$config->source->name]) === false) {
             throw new RegistryException('Unknown input "' . $config->source->name . '".');
@@ -62,7 +65,7 @@ class InputRegistry
             $options['headers'] = HeadersBuider::fromPipeline($config);
         }
         $class = $this->map[$config->source->name];
-        return new $class($options);
+        return new $class($config->source, $context);
     }
 
     /**
@@ -87,5 +90,15 @@ class InputRegistry
     public function getClass(string $name) : string | null
     {
         return ($this->map[$name]) ?? null;
+    }
+
+    /**
+     * getAll
+     *
+     * @return array
+     */
+    public function getAll() : array
+    {
+        return $this->map;
     }
 }

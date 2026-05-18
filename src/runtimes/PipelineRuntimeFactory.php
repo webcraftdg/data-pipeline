@@ -11,6 +11,7 @@
 namespace webcraftdg\dataPipeline\runtimes;
 
 use webcraftdg\dataPipeline\configs\PipelineConfig;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\mappers\ColumnMapper;
 use webcraftdg\dataPipeline\registry\InputRegistry;
 use webcraftdg\dataPipeline\registry\OutputRegistry;
@@ -43,13 +44,14 @@ final class PipelineRuntimeFactory
      * create
      *
      * @param  \webcraftdg\dataPipeline\configs\PipelineConfig $config
+     * @param  RuntimeContextInterface|null                    $context
      *
      * @return PipelineRuntime
      */
-    public function create(PipelineConfig $config): PipelineRuntime
+    public function create(PipelineConfig $config, ?RuntimeContextInterface $context = null): PipelineRuntime
     {
-        $input = $this->inputRegistry->create($config);
-        $output = $this->outputRegistry->create($config);
+        $input = $this->inputRegistry->create($config, $context);
+        $output = $this->outputRegistry->create($config, $context);
         $processor = $config->processor !== null
             ? $this->processorRegistry->create($config)
             : null;

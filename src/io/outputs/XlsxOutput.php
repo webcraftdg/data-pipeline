@@ -13,8 +13,10 @@ namespace webcraftdg\dataPipeline\io\outputs;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\XlsxWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\contexts\OutputContext;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
+use webcraftdg\dataPipeline\rules\FileRules;
+use yii\helpers\ArrayHelper;
 
 class XlsxOutput implements OutputInterface, ValidateRulesInterface
 {
@@ -23,19 +25,33 @@ class XlsxOutput implements OutputInterface, ValidateRulesInterface
      *
      * @var XlsxWriter
      */
-    private  XlsxWriter $writer;
+    private XlsxWriter $writer;
+    private ?RuntimeContextInterface $context;
 
-     /**
+    /**
      * constructor
      *
-     * @param  PipelineConfig $config
-     * @param  array          $options
+     * @param  PipelineConfig               $config
+     * @param  RuntimeContextInterface|null $context
      */
-    public function __construct(private PipelineConfig $config, private array $options = [])
+    public function __construct(
+        private PipelineConfig $config,
+        ?RuntimeContextInterface $context = null)
     {
-        $this->writer = new XlsxWriter($this->config, $this->options);
+        $this->writer = new XlsxWriter($this->config, $this->config->target->getOptions());
+        $this->context = $context;
     }
 
+
+    /**
+     * rules
+     *
+     * @return array
+     */
+    public static function rules() : array
+    {
+        return ArrayHelper::merge(FileRules::rulesHeader(), FileRules::rulesPath());
+    }
 
     /**
      * open
@@ -46,31 +62,17 @@ class XlsxOutput implements OutputInterface, ValidateRulesInterface
     {
         $this->writer->open();
     }
-
-    /**
-     * rules
-     *
-     * @return array
-     */
-    public static function rules() : array
-    {
-        return [
-            'path' => ['required' => true, 'type' => 'string'],
-        ];
-    }
-
  
     /**
      * write
      *
      * @param  array              $row
-     * @param  OutputContext|null $context
      *
      * @return void
      */
-    public function write(array $row, ?OutputContext $context = null): void
+    public function write(array $row): void
     {
-        $this->writer->write($row, $context);
+        $this->writer->write($row);
     }
 
     /**

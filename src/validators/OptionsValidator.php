@@ -25,15 +25,22 @@ final class OptionsValidator
      * @param  array                                              $rules
      * @param  OptionsConfigInterface                             $dataConfig
      * @param  \webcraftdg\dataPipeline\exceptions\ErrorCollector $errorCollector
+     * @param  string                                             $context
      *
      * @return void
      */
-    public function validate(string $path, array $rules, OptionsConfigInterface $dataConfig, ErrorCollector $errorCollector): void
+    public function validate(
+        string $path,
+        array $rules,
+        OptionsConfigInterface $dataConfig,
+        ErrorCollector $errorCollector,
+        string $context = 'runtime'
+    ): void
     {
         $options = $dataConfig->getOptions();
         foreach($rules as $name => $rule) {
             $type = $rule['type'];
-            $required = $rule['required'];
+            $required = ($context === 'runtime') ? $rule['runtimeRequired'] : $rule['required'];
             $when = ($rule['when']) ?? null;
             $ruleOptions = ($rule['options']) ?? [];
             $hasOption = in_array($name, array_keys($options));

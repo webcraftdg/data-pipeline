@@ -1,6 +1,6 @@
 <?php
 /**
- * ExcelReader.php
+ * XlsInput.php
  *
  * PHP Version 8.2+
  *
@@ -11,40 +11,67 @@
 namespace webcraftdg\dataPipeline\io\inputs;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\InputSpreadsheetInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
+use webcraftdg\dataPipeline\configs\SourceConfig;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
+use webcraftdg\dataPipeline\rules\FileRules;
+use yii\helpers\ArrayHelper;
 use InvalidArgumentException;
 
-class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateRulesInterface
+class XlsInput implements InputInterface, InputSpreadsheetInterface, ValidateRulesInterface
 {
 
 
     private Spreadsheet $spreadsheet;
     private Worksheet $sheet;
+    private array $options;
     private int $maxColumns = 0;
     private array $headers = [];
     private int $batchSize = 250;
-    private string $delimiter = ';';
-    private string $enclosure = '"';
-    private string $inputEncoding = 'ISO-8859-1';
+    private ?RuntimeContextInterface $context;
 
-     /**
+    /**
      * constructor
      *
-     * @param  array          $options
+     * @param  SourceConfig                 $config
+     * @param  RuntimeContextInterface|null $context
      */
-    public function __construct(private array $options = [])
+    public function __construct(
+        private SourceConfig $config,
+        ?RuntimeContextInterface $context = null
+    )
     {
-        $this->headers = ($options['headers']) ?? [];
-        $this->batchSize = ($options['batchSize']) ?? $this->batchSize;
-        $this->delimiter = ($options['delimiter']) ?? ';';
-        $this->enclosure = ($options['enclosure']) ?? '"';
-        $this->inputEncoding = ($options['inputEncoding']) ?? 'ISO-8859-1';
+        $this->options = $this->config->getOptions();
+        $this->headers = ($this->options['headers']) ?? [];
+        $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
+        $this->context = $context;
+    }
+
+      /**
+     * rules
+     *
+     * @return array
+     */
+    public static function rules() : array
+    {
+        $local = [
+            'maxColumns' => [
+                'name' => 'maxColumns',
+                'label' => 'Nombre de colonnes maximum',
+                'type' => 'integer',
+                'input' => false,
+                'runtimeRequired' => false,
+                'required' => false,
+            ],
+        ];
+        $first = ArrayHelper::merge(FileRules::rulesHeader(), $local);
+        $first = ArrayHelper::merge($first, FileRules::rulesBatchSize());
+        return  ArrayHelper::merge($first, FileRules::rulesPath());
     }
 
     /**
@@ -54,7 +81,7 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateR
      */
     public function open(): void
     {
-         $filePath = ($this->options['path']) ?? '';
+        $filePath = ($this->options['path']) ?? '';
         $this->spreadsheet = $this->prepareSpreadSheet($filePath);
         if ($this->spreadsheet instanceof Spreadsheet) {
             $this->sheet = $this->spreadsheet->getActiveSheet();
@@ -67,24 +94,6 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateR
         $this->headers = $this->getHeaders();
     }
 
-
-    /**
-     * rules
-     *
-     * @return array
-     */
-    public static function rules() : array
-    {
-        return [
-            'path' => ['required' => true, 'type' => 'string'],
-            'headers' => ['required' => false, 'type' => 'array'],
-            'delimiter' => ['required' => false, 'type' => 'string'],
-            'enclosure' => ['required' => false, 'type' => 'string'],
-            'inputEncoding' => ['required' => false, 'type' => 'string'],
-            'maxColumns' => ['required' => false, 'type' => 'integer'],
-            'batchSize' => ['required' => false, 'type' => 'integer'],
-        ];
-    }
     /**
      * read
      *
@@ -165,16 +174,6 @@ class ExcelInput implements InputInterface, InputSpreadsheetInterface, ValidateR
                 case 'xlsx':
                 case 'xls':
                     $spreadsheet = IOFactory::load($filePath);
-                    break;
-                case 'csv':
-                case 'txt':
-                    $reader = new Csv();
-                    $reader->setDelimiter($this->delimiter);
-                    $reader->setEnclosure($this->enclosure);
-                    $reader->setInputEncoding($this->inputEncoding);
-                    $reader->setSheetIndex(0);
-                    $reader->setReadDataOnly(true);
-                    $spreadsheet = $reader->load($filePath);
                     break;
                 default:
                     throw new InvalidArgumentException("Extension non supportée : " . $extension);
