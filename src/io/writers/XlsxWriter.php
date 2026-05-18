@@ -16,8 +16,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
 use webcraftdg\dataPipeline\configs\ColumnMapping;
-use InvalidArgumentException;
 use webcraftdg\dataPipeline\context\OutputContext;
+use webcraftdg\dataPipeline\exceptions\WriterException;
 
 class XlsxWriter implements DataWriterInterface
 {
@@ -77,7 +77,7 @@ class XlsxWriter implements DataWriterInterface
     public function open(): void
     {
         if ($this->path === null) {
-            throw new InvalidArgumentException('CsvWriter params "path" not found');
+            throw new WriterException('CsvWriter params "path" not found');
         }
     }
 

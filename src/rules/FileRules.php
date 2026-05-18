@@ -62,7 +62,7 @@ final class FileRules
             ),
             'inputEncoding' => array_merge(
                 [
-                    'name' => 'encoding',
+                    'name' => 'inputEncoding',
                     'label' => 'Encodage',
                     'options' => ['UTF-8', 'ISO-8859-1'],
                     'default' => 'UTF-8',

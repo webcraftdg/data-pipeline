@@ -14,7 +14,7 @@ use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
 use webcraftdg\dataPipeline\configs\ColumnMapping;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\context\OutputContext;
-use InvalidArgumentException;
+use webcraftdg\dataPipeline\exceptions\WriterException;
 
 class CsvWriter implements DataWriterInterface
 {
@@ -60,7 +60,7 @@ class CsvWriter implements DataWriterInterface
     public function open(): void
     {
         if ($this->path === null) {
-            throw new InvalidArgumentException('CsvWriter params "path" not found');
+            throw new WriterException('CsvWriter params "path" not found');
         }
         $this->handle = fopen($this->path, 'w');
     }

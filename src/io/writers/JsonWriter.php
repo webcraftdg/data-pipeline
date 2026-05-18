@@ -14,8 +14,7 @@ namespace webcraftdg\dataPipeline\io\writers;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
 use webcraftdg\dataPipeline\configs\ColumnMapping;
-use webcraftdg\dataPipeline\contexts\OutputContext;
-use InvalidArgumentException;
+use webcraftdg\dataPipeline\exceptions\WriterException;
 
 class JsonWriter implements DataWriterInterface
 {
@@ -46,7 +45,7 @@ class JsonWriter implements DataWriterInterface
     public function open(): void
     {
         if ($this->path === null) {
-            throw new InvalidArgumentException('JsonWriter params "path" not found');
+            throw new WriterException('JsonWriter params "path" not found');
         }
         $conlumnsMappings = array_map(function(ColumnMapping $column) {
         return ['inputKey' => $column->inputKey, 'outputKey' => $column->outputKey];
