@@ -18,6 +18,7 @@ use webcraftdg\dataPipeline\io\outputs\XmlOutput;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
 use webcraftdg\dataPipeline\exceptions\RegistryException;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 
 class OutputRegistry
 {
@@ -44,17 +45,18 @@ class OutputRegistry
     /**
      * create
      *
-     * @param  PipelineConfig  $config
+     * @param  PipelineConfig               $config
+     * @param  RuntimeContextInterface|null $context
      *
      * @return OutputInterface
      */
-    public function create(PipelineConfig $config): OutputInterface
+    public function create(PipelineConfig $config, ?RuntimeContextInterface $context = null): OutputInterface
     {
         if (isset($this->map[$config->target->name]) === false) {
             throw new RegistryException('Unknown output "' . $config->target->name . '".');
         }
         $class = $this->map[$config->target->name];
-        return new $class($config, $config->target->options);
+        return new $class($config, $context);
     }
 
        /**
@@ -79,5 +81,15 @@ class OutputRegistry
     public function getClass(string $name) : string | null
     {
         return ($this->map[$name]) ?? null;
+    }
+
+    /**
+     * getAll
+     *
+     * @return array
+     */
+    public function getAll() : array
+    {
+        return $this->map;
     }
 }

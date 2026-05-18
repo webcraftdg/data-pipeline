@@ -12,9 +12,8 @@ namespace webcraftdg\dataPipeline\io\writers;
 
 use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\contexts\OutputContext;
+use webcraftdg\dataPipeline\exceptions\WriterException;
 use XMLWriter as GlobalXMLWriter;
-use InvalidArgumentException;
 
 class XmlWriter implements DataWriterInterface
 {
@@ -49,7 +48,7 @@ class XmlWriter implements DataWriterInterface
     {
         
         if ($this->path === null) {
-            throw new InvalidArgumentException('XmlWriter params "path" not found');
+            throw new WriterException('XmlWriter params "path" not found');
         }
         $this->xmlWriter->openUri($this->path);
         $this->xmlWriter->startDocument('1.0', 'UTF-8');
@@ -66,11 +65,10 @@ class XmlWriter implements DataWriterInterface
      * write
      *
      * @param  array              $row
-     * @param  OutputContext|null $context
      *
      * @return void
      */
-    public function write(array $row, ?OutputContext $context = null): void
+    public function write(array $row): void
     {
         if (empty($row) === false) {
             $this->xmlWriter->startElement('record');

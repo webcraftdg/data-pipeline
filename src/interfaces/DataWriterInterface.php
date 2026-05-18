@@ -9,9 +9,6 @@
  * @package webcraftdg\dataPipeline\interfaces
  */
 namespace webcraftdg\dataPipeline\interfaces;
-
-use webcraftdg\dataPipeline\contexts\OutputContext;
-
 interface DataWriterInterface
 {
     /**
@@ -25,11 +22,10 @@ interface DataWriterInterface
      * write
      *
      * @param  array              $row
-     * @param  OutputContext|null $context
      *
      * @return void
      */
-    public function write(array $row, ?OutputContext $context = null): void;
+    public function write(array $row): void;
 
     /**
      * close

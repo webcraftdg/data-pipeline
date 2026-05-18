@@ -13,8 +13,9 @@ namespace webcraftdg\dataPipeline\io\outputs;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\io\writers\JsonWriter;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\contexts\OutputContext;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
+use webcraftdg\dataPipeline\rules\FileRules;
 
 class JsonOutput implements OutputInterface, ValidateRulesInterface
 {
@@ -24,16 +25,20 @@ class JsonOutput implements OutputInterface, ValidateRulesInterface
      * @var JsonWriter
      */
     private  JsonWriter $writer;
+    private ?RuntimeContextInterface $context;
 
-    /**
+     /**
      * constructor
      *
-     * @param  PipelineConfig $config
-     * @param  array          $options
+     * @param  PipelineConfig               $config
+     * @param  RuntimeContextInterface|null $context
      */
-    public function __construct(private PipelineConfig $config, private array $options = [])
+    public function __construct(
+        private PipelineConfig $config,
+        ?RuntimeContextInterface $context = null)
     {
-        $this->writer = new JsonWriter($this->config, $this->options);
+        $this->writer = new JsonWriter($this->config, $this->config->target->getOptions());
+        $this->context = $context;
     }
 
      /**
@@ -43,9 +48,7 @@ class JsonOutput implements OutputInterface, ValidateRulesInterface
      */
     public static function rules() : array
     {
-        return [
-            'path' => ['required' => true, 'type' => 'string'],
-        ];
+        return FileRules::rulesPath();
     }
 
     /**
@@ -63,13 +66,12 @@ class JsonOutput implements OutputInterface, ValidateRulesInterface
      * write
      *
      * @param  array              $row
-     * @param  OutputContext|null $context
      *
      * @return void
      */
-    public function write(array $row, ?OutputContext $context = null): void
+    public function write(array $row): void
     {
-        $this->writer->write($row, $context);
+        $this->writer->write($row);
     }
 
     /**

@@ -10,27 +10,13 @@
  */
 namespace webcraftdg\dataPipeline\io\inputs;
 
-
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 
-class NDJsonInput implements InputInterface, ValidateRulesInterface
+class NDJsonInput extends FileJsonInput implements InputInterface, ValidateRulesInterface
 {
 
     private $handle;
-    private $path;
-    private int $batchSize = 250;
-
-    /**
-     * constructor
-     *
-     * @param  array          $options
-     */
-    public function __construct(private array $options = [])
-    {
-        $this->path = ($this->options['path']) ?? '';
-        $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
-    }
 
     /**
      * open
@@ -42,19 +28,6 @@ class NDJsonInput implements InputInterface, ValidateRulesInterface
         $this->handle = fopen($this->path, 'rb');
     }
 
-
-    /**
-     * rules
-     *
-     * @return array
-     */
-    public static function rules() : array
-    {
-        return [
-            'path' => ['required' => true, 'type' => 'string'],
-            'batchSize' => ['required' => false, 'type' => 'integer'],
-        ];
-    }
     /**
      * read
      *
@@ -70,7 +43,7 @@ class NDJsonInput implements InputInterface, ValidateRulesInterface
                 unset($row['_type']);
                 $batch[] = $row;
                 $indexBatch++;
-                    if ($indexBatch >= $this->batchSize) {
+                if ($indexBatch >= $this->batchSize) {
                     yield $batch;
                     $batch = [];
                     $indexBatch = 0;

@@ -15,6 +15,7 @@ use webcraftdg\dataPipeline\exceptions\ProcessorResult;
 use webcraftdg\dataPipeline\interfaces\InputInterface;
 use webcraftdg\dataPipeline\interfaces\OutputInterface;
 use webcraftdg\dataPipeline\interfaces\ProcessorInterface;
+use webcraftdg\dataPipeline\interfaces\RuntimeContextInterface;
 use webcraftdg\dataPipeline\interfaces\ValidateRulesInterface;
 use webcraftdg\dataPipeline\pipelines\PipelineExecutor;
 use webcraftdg\dataPipeline\processors\ValidateEmailProcessor;
@@ -22,6 +23,7 @@ use webcraftdg\dataPipeline\registry\InputRegistry;
 use webcraftdg\dataPipeline\registry\OutputRegistry;
 use webcraftdg\dataPipeline\registry\ProcessorRegistry;
 use webcraftdg\dataPipeline\registry\TransformerRegistry;
+use webcraftdg\dataPipeline\rules\FileRules;
 use webcraftdg\dataPipeline\runtimes\PipelineRuntime;
 use webcraftdg\dataPipeline\runtimes\PipelineRuntimeFactory;
 use webcraftdg\dataPipeline\supports\enums\DataEndpointType;
@@ -39,6 +41,7 @@ use webcraftdg\dataPipeline\transformers\UpperColumnTransformer;
 use webcraftdg\dataPipeline\validators\FileConfigJsonValidator;
 use webcraftdg\dataPipeline\validators\OptionsValidator;
 use webcraftdg\dataPipeline\validators\PipelineConfigValidator;
+use yii\helpers\ArrayHelper;
 
 class UserImportProcessor implements ProcessorInterface
 {
@@ -71,9 +74,14 @@ class TableInput implements InputInterface, ValidateRulesInterface
 {
 
     private int $batchSize = 250;
+    private array $options;
 
-    public function __construct(private array $options = [])
+    public function __construct(
+        private SourceConfig $config,
+        ?RuntimeContextInterface $context = null
+    )
     {
+        $this->options = $config->getOptions();
         $this->batchSize = ($this->options['batchSize']) ?? $this->batchSize;
     }
     
@@ -93,13 +101,18 @@ class TableInput implements InputInterface, ValidateRulesInterface
      */
     public static function rules() : array
     {
-        return [
-            'table' => ['required' => true, 'type' => 'string', 'when' => ['name' => 'table']],
-            'mode' => ['required' => true, 'type' => 'enum', 'options'=> ['insert', 'update', 'upsert']],
-            'headers' => ['required' => false, 'type' => 'array'],
-            'footer' => ['required' => false, 'type' => 'string'],
-            'batchSize' => ['required' => false, 'type' => 'integer'],
+        $local =  [
+            'table' => [
+                'name' => 'table',
+                'label' => 'Table Cible',
+                'type' => 'string',
+                'input' => 'text',
+                'required' => true,
+                'runtimeRequired' => true,
+                'default' => null,
+            ],
         ];
+        return ArrayHelper::merge($local, FileRules::rulesBatchSize());
     }
 
     /**
@@ -249,9 +262,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
 
 
         $pipelinRuntime = (new PipelineRuntimeFactory(
-            new InputRegistry(), 
-            new OutputRegistry(), 
-            new ProcessorRegistry(), 
+            new InputRegistry(),
+            new OutputRegistry(),
+            new ProcessorRegistry(),
             $registryTransfromer
         ))->create($config);
 
@@ -260,6 +273,10 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $this->tester->assertInstanceOf(InputInterface::class, $pipelinRuntime->input);
         $this->tester->assertInstanceOf(OutputInterface::class, $pipelinRuntime->output);
 
+        $targetArray = $config->target->toArray();
+        $this->tester->assertArrayHasKey('type', $targetArray);
+        $this->tester->assertArrayHasKey('name', $targetArray);
+        $this->tester->assertArrayHasKey('options', $targetArray);
 
 
         $executor = new PipelineExecutor();
@@ -551,9 +568,8 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $fileJson = __DIR__.'/../Support/Data/test_ouput.xlsx';
         $content = file_get_contents($fileJson);
         $this->tester->assertNotEmpty($content);
-
     }
-
+   
     public function testPipelineToXml()
     {
         $inputRows = [
@@ -1474,7 +1490,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $errorCollector = $pipelineValidation->validate($config);
 
         $this->tester->assertTrue($errorCollector->hasErrors());
-        $this->tester->assertEquals(4, count($errorCollector->all()));
+        $this->tester->assertEquals(9, count($errorCollector->all()));
 
 
          $config = new PipelineConfig(
@@ -1595,7 +1611,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
 
     }
     
-      public function testPipelineExemple()
+    public function testPipelineExemple()
     {
        $config = new PipelineConfig(
         name: 'import-users',
@@ -1604,7 +1620,11 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
 
         source: new SourceConfig(DataEndpointType::FILE, PipelineDataFormat::CSV, [
             'path' => __DIR__ . '/../Support/Data/users_input.csv',
-            'delimiter' => ';'
+            'delimiter' => ';',
+            'enclosure' => '"',
+            'escape' => '\\',
+            'eol' => '\n',
+            'inputEncoding' => 'ISO-8859-1',
         ]),
 
         target: new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
@@ -1740,8 +1760,9 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
             'mode' => 'inserted',
         ]),
 
-        target: new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::JSON, [
-             'path' => __DIR__ . '/../Support/Data/testPipelineExemple.json',
+        target: new TargetConfig(DataEndpointType::FILE, PipelineDataFormat::TABLE, [
+            'table' => 'users',
+            'mode' => 'inserted',
         ]),
 
         columns: [
@@ -1771,7 +1792,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $pipelineFactory = new PipelineRuntimeFactory(
             inputRegistry: $inputRegistry, 
             outputRegistry: new OutputRegistry(), 
-            processorRegistry: new ProcessorRegistry($processors), 
+            processorRegistry: new ProcessorRegistry($processors),
             transformerRegistry: new TransformerRegistry()
         );
         $optionValidation = new OptionsValidator();

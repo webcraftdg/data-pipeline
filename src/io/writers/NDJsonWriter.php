@@ -12,9 +12,8 @@ namespace webcraftdg\dataPipeline\io\writers;
 
 use webcraftdg\dataPipeline\configs\ColumnMapping;
 use webcraftdg\dataPipeline\configs\PipelineConfig;
-use webcraftdg\dataPipeline\contexts\OutputContext;
 use webcraftdg\dataPipeline\interfaces\DataWriterInterface;
-use InvalidArgumentException;
+use webcraftdg\dataPipeline\exceptions\WriterException;
 
 class NDJsonWriter implements DataWriterInterface
 {
@@ -46,7 +45,7 @@ class NDJsonWriter implements DataWriterInterface
     public function open(): void
     {
         if ($this->path === null) {
-            throw new InvalidArgumentException('NDJsonWriter params "path" not found');
+            throw new WriterException('NDJsonWriter params "path" not found');
         }
         $conlumnsMappings = array_map(function(ColumnMapping $column) {
                     return ['inputKey' => $column->inputKey, 'outputKey' => $column->outputKey];
@@ -68,11 +67,10 @@ class NDJsonWriter implements DataWriterInterface
      * write
      *
      * @param  array                                                $row
-     * @param  \webcraftdg\dataPipeline\contexts\OutputContext|null $context
      *
      * @return void
      */
-    public function write(array $row, ?OutputContext $context = null): void
+    public function write(array $row): void
     {
         if (empty($row) === false) {
             $row = array_merge(['_type' => 'data'], $row);

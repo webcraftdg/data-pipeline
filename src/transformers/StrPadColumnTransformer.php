@@ -39,13 +39,34 @@ class StrPadColumnTransformer implements TransformerInterface, ValidateRulesInte
     public static function rules() : array
     {
         return [
-            'length' => ['required' => true, 'type' => 'integer','label'=>'Longueur de la chaine'],
-            'string' => ['required' => true, 'type' => 'string','label'=>'Valeur à ajouter'],
-            'type' => ['required' => true, 'type' => 'integer', 'label'=>'Ajouter à gauche ou droite', 'options' => [
-                ['value' => STR_PAD_LEFT, 'name' => 'left'],
-                ['value' => STR_PAD_RIGHT, 'name' => 'right'],
-                ['value' => STR_PAD_BOTH, 'name' => 'both'],
-            ]],
+            'length' => [
+                'name' => 'length',
+                'label'=>'Longueur de la chaine',
+                'type' => 'integer',
+                'required' => true,
+                'runtimeRequired' => true,
+                'options' => null
+            ],
+            'string' => [
+                'name' => 'string',
+                'label'=>'Valeur à ajouter',
+                'type' => 'string',
+                'required' => true,
+                'runtimeRequired' => true,
+                'options' => null
+            ],
+            'type' => [
+                'name' => 'type',
+                'label'=>'Ajouter à gauche ou droite',
+                'type' => 'integer',
+                'required' => true,
+                'runtimeRequired' => true,
+                'options' => [
+                    ['value' => STR_PAD_LEFT, 'name' => 'left'],
+                    ['value' => STR_PAD_RIGHT, 'name' => 'right'],
+                    ['value' => STR_PAD_BOTH, 'name' => 'both'],
+                ],
+            ],
         ];
     }
 
