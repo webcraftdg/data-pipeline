@@ -66,7 +66,7 @@ class CsvInput implements InputInterface, ValidateRulesInterface
      */
     public static function rules() : array
     {
-        return ArrayHelper::merge(FileRules::rulesCsv(), FileRules::rulesPath(),FileRules::rulesBatchSize());
+        return ArrayHelper::merge(FileRules::rulesHeader(), FileRules::rulesCsv(), FileRules::rulesPath(),FileRules::rulesBatchSize());
     }
 
     /**
