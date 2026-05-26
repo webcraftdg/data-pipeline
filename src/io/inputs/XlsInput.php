@@ -82,6 +82,9 @@ class XlsInput implements InputInterface, InputSpreadsheetInterface, ValidateRul
     public function open(): void
     {
         $filePath = ($this->options['path']) ?? '';
+        if (empty($filePath) === true) {
+            throw new InvalidArgumentException('XlsInput option "path" is invalid.');
+        }
         $this->spreadsheet = $this->prepareSpreadSheet($filePath);
         if ($this->spreadsheet instanceof Spreadsheet) {
             $this->sheet = $this->spreadsheet->getActiveSheet();
