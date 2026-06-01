@@ -1,7 +1,13 @@
 CHANGELOG
 =========
 
-Release v1.2.0 18/05/2026 <davidg@webcraftdg.fr>
+Release v1.4.0 01/06/2026 <davidg@webcraftdg.fr>
+----------------------------------------------
+
+* update Input and output rules
+* update CSV rules
+
+Release v1.3.0 18/05/2026 <davidg@webcraftdg.fr>
 ----------------------------------------------
 
 * update IO rules
