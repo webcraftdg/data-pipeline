@@ -30,8 +30,6 @@ class CsvInput implements InputInterface, ValidateRulesInterface
     private bool $hasHeader = true;
     private string $delimiter = ';';
     private string $enclosure = '"';
-    private string $escape = '\\';
-    private string $eol = '\n';
     private string $inputEncoding = 'ISO-8859-1';
     private ?RuntimeContextInterface $context;
 
@@ -52,8 +50,6 @@ class CsvInput implements InputInterface, ValidateRulesInterface
         $this->delimiter = ($this->options['delimiter']) ?? $this->delimiter;
         $this->enclosure = ($this->options['enclosure']) ?? $this->enclosure;
         $this->hasHeader = ($this->options['hasHeader']) ?? $this->hasHeader;
-        $this->escape = ($this->options['escape']) ?? $this->escape;
-        $this->eol = ($this->options['eol']) ?? $this->eol;
         $this->inputEncoding = ($this->options['inputEncoding']) ?? $this->inputEncoding;
         $this->context = $context;
     }
@@ -66,7 +62,7 @@ class CsvInput implements InputInterface, ValidateRulesInterface
      */
     public static function rules() : array
     {
-        return ArrayHelper::merge(FileRules::rulesCsv(), FileRules::rulesPath(),FileRules::rulesBatchSize());
+        return ArrayHelper::merge(FileRules::rulesHeader(), FileRules::rulesCsv(), FileRules::rulesPath(),FileRules::rulesBatchSize());
     }
 
     /**
@@ -93,10 +89,10 @@ class CsvInput implements InputInterface, ValidateRulesInterface
         $batch = [];
         $indexBatch = 0;
         if ($this->hasHeader && empty($this->headers) === true) {
-            $this->headers = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escape) ?: [];
+            $this->headers = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure) ?: [];
         }
 
-        while (($row = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escape)) !== false) {
+        while (($row = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure)) !== false) {
             if ($this->hasHeader) {
                 $row = array_combine($this->headers, $row) ?: [];
             }

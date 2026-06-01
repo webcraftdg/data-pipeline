@@ -46,7 +46,8 @@ final class PipelineExecutor
                         $mappedRow = $this->applyProcessor(
                             row: $mappedRow,
                             pipelineRuntime: $pipelineRuntime,
-                            report: $report
+                            report: $report,
+                            options: $config->options ?? []
                         );
 
                         if ($mappedRow === null) {
@@ -75,19 +76,20 @@ final class PipelineExecutor
     }
 
     /**
-     * Apply processor
+     * Undocumented function
      *
      * @param  array                                             $row
      * @param  \webcraftdg\dataPipeline\runtimes\PipelineRuntime $pipelineRuntime
      * @param  ExecutionReport                                   $report
+     * @param  array                                             $options
      *
      * @return array|null
      */
-    private function applyProcessor(array $row, PipelineRuntime $pipelineRuntime, ExecutionReport $report) : ?array
+    private function applyProcessor(array $row, PipelineRuntime $pipelineRuntime, ExecutionReport $report, array $options = []) : ?array
     {
         $mappedRow = $row;
         if ($pipelineRuntime->processor !== null) {
-            $processorResult = $pipelineRuntime->processor->process($mappedRow);
+            $processorResult = $pipelineRuntime->processor->process($mappedRow, $options);
             if ($processorResult->handled === true) {
                 $report->rowsSuccess++;
                 $mappedRow = null;

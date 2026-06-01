@@ -44,22 +44,6 @@ final class FileRules
                 ],
                 static::$rulesRequiredText
             ),
-            'escape' => array_merge(
-                [
-                    'name' => 'escape',
-                    'label' => 'Echappe',
-                    'default' => '\\',
-                ],
-                static::$rulesRequiredText
-            ),
-            'eol' => array_merge(
-                [
-                    'name' => 'eol',
-                    'label' => 'EOF (Fin de fichier)',
-                    'default' => '\n',
-                ],
-                static::$rulesRequiredText
-            ),
             'inputEncoding' => array_merge(
                 [
                     'name' => 'inputEncoding',
