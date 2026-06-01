@@ -26,8 +26,6 @@ class CsvWriter implements DataWriterInterface
     private string|null $path;
     private string $delimiter = ';';
     private string $enclosure = '"';
-    private string $escape = '\\';
-    private string $eol = '\n';
     private OutputContext $outputContext;
 
 
@@ -42,8 +40,6 @@ class CsvWriter implements DataWriterInterface
         $this->path = ($this->options['path']) ?? null;
         $this->delimiter = ($this->options['delimiter']) ?? $this->delimiter;
         $this->enclosure = ($this->options['enclosure']) ?? $this->delimiter;
-        $this->escape = ($this->options['escape']) ?? $this->escape;
-        $this->eol = ($this->options['eol']) ?? $this->eol;
         $this->outputContext = new OutputContext(
             colOffset: 1,
             rowOffset: 1,
@@ -75,7 +71,7 @@ class CsvWriter implements DataWriterInterface
     public function write(array $row): void
     {
         $this->addHeaders();
-        fputcsv($this->handle, $row, $this->delimiter, $this->enclosure, $this->escape, $this->eol);
+        fputcsv($this->handle, $row, $this->delimiter, $this->enclosure);
     }
 
     /**
@@ -93,7 +89,7 @@ class CsvWriter implements DataWriterInterface
                     return $column->outputKey;
                 }, $this->config->columns);
             }
-            fputcsv($this->handle, $headers, $this->delimiter, $this->enclosure, $this->escape, $this->eol);
+            fputcsv($this->handle, $headers, $this->delimiter, $this->enclosure);
             $this->headerWritten = true;
         }
     }

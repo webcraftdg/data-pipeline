@@ -50,7 +50,7 @@ class CsvOutput implements OutputInterface, ValidateRulesInterface
      */
     public static function rules() : array
     {
-        return ArrayHelper::merge(FileRules::rulesCsv(), FileRules::rulesPath());
+        return ArrayHelper::merge(FileRules::rulesHeader(), FileRules::rulesCsv(), FileRules::rulesPath());
     }
 
     /**

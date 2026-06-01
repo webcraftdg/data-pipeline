@@ -1490,7 +1490,7 @@ class ConfigLoaderTest extends \Codeception\Test\Unit
         $errorCollector = $pipelineValidation->validate($config);
 
         $this->tester->assertTrue($errorCollector->hasErrors());
-        $this->tester->assertEquals(9, count($errorCollector->all()));
+        $this->tester->assertEquals(7, count($errorCollector->all()));
 
 
          $config = new PipelineConfig(
