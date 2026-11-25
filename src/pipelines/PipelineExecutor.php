@@ -47,7 +47,7 @@ final class PipelineExecutor
                             row: $mappedRow,
                             pipelineRuntime: $pipelineRuntime,
                             report: $report,
-                            options: $config->options ?? []
+                            options: $config->processor?->options ?? []
                         );
 
                         if ($mappedRow === null) {
