@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Release v1.5.0 25/11/2026 <davidg@webcraftdg.fr>
+----------------------------------------------
+
+* Fix Load processor options
+
 Release v1.4.0 01/06/2026 <davidg@webcraftdg.fr>
 ----------------------------------------------
 

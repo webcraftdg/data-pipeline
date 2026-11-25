@@ -4,3 +4,4 @@
 tests/Support/*
 !.gitkeep
 tests/_output
+sonar-project.properties
